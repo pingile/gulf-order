@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#00843D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gulf Order">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Gulf Order – Beer &amp; Red Bull</title>
+<style id="css">
+:root{--g:#00843D;--g2:#e6f4ec;--n:#1F3864;--rb:#C00000;--bg:#f3f5f7;--card:#fff;--mut:#6b7280;--line:#e5e7eb;--y:#fff7d6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#111;font-size:16px}
+header{position:sticky;top:0;z-index:20;background:var(--g);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
+header h1{margin:0;font-size:18px;font-weight:700}
+header .sub{font-size:12px;opacity:.9;margin-top:2px}
+.tools{position:sticky;top:calc(env(safe-area-inset-top) + 56px);z-index:19;background:var(--bg);padding:8px 12px 6px;border-bottom:1px solid var(--line)}
+.search{width:100%;padding:11px 12px;border:1px solid #cfd4da;border-radius:10px;font-size:16px;background:#fff}
+.chips{display:flex;gap:6px;margin-top:8px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;border:1px solid #cfd4da;background:#fff;border-radius:999px;padding:7px 12px;font-size:14px;color:#333}
+.chip.on{background:var(--n);border-color:var(--n);color:#fff}
+main{padding:8px 10px calc(110px + env(safe-area-inset-bottom))}
+.sec{margin:12px 0 4px}
+.sech{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:10px;background:#dfe6f3;color:var(--n);font-weight:700;font-size:14px;cursor:pointer;user-select:none}
+.sech.rb{background:var(--rb);color:#fff}
+.sech .cnt{font-weight:500;font-size:12px;opacity:.85}
+.item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 10px 10px 12px;margin-top:6px}
+.item.ordered{border-color:var(--g);background:var(--g2)}
+.item.inactive{opacity:.55;background:#eef0f2}
+.item.inactive .nm{text-decoration:line-through}
+.info{flex:1;min-width:0;cursor:pointer}
+.nm{font-weight:600;font-size:15px;line-height:1.25}
+.meta{font-size:12.5px;color:var(--mut);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.last{background:#fff2cc;color:#7a5b00;border-radius:6px;padding:1px 6px;font-weight:600}
+.last.none{background:#f1f1f1;color:#999;font-weight:500}
+.tag{border-radius:6px;padding:1px 6px;font-size:11px;font-weight:700}
+.tag.in{background:#ddd;color:#555}
+.step{display:flex;align-items:center;gap:4px;flex:none}
+.step button{width:38px;height:38px;border-radius:10px;border:1px solid #cfd4da;background:#fff;font-size:22px;line-height:1;color:var(--n)}
+.step button.plus{background:var(--g);border-color:var(--g);color:#fff}
+.step input{width:44px;height:38px;text-align:center;font-size:17px;font-weight:700;border:1px solid #cfd4da;border-radius:10px;background:var(--y)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center}
+.bar .sum{flex:1;font-size:13px;color:var(--mut)}
+.bar .sum b{font-size:17px;color:#111}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:700;background:var(--n);color:#fff}
+.btn.g{background:var(--g)}.btn.r{background:#b42318}.btn.o{background:#fff;color:var(--n);border:1px solid #cfd4da}
+.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;width:56px;height:56px;border-radius:50%;border:0;background:var(--rb);color:#fff;font-size:30px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
+.ov.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet h2{margin:0 0 12px;font-size:18px;color:var(--n)}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+.f{width:100%;padding:11px;border:1px solid #cfd4da;border-radius:10px;font-size:16px;background:#fff}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.tog{display:flex;border:1px solid #cfd4da;border-radius:10px;overflow:hidden}
+.tog button{flex:1;padding:11px;border:0;background:#fff;font-size:15px;font-weight:600;color:#555}
+.tog button.on.a{background:var(--g);color:#fff}.tog button.on.i{background:#777;color:#fff}
+.acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.acts .btn{flex:1}
+.rv{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.rv div{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px}
+.rv div:last-child{border-bottom:0}
+.rv .h{background:#eef2f8;font-weight:700;color:var(--n);font-size:12.5px}
+.note{font-size:12.5px;color:var(--mut);margin-top:8px}
+.toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:60;display:none}
+.ro{background:#fff3cd;color:#664d03;font-size:13px;padding:8px 12px;text-align:center}
+.empty{text-align:center;color:var(--mut);padding:40px 10px}
+#printArea{display:none}
+@media print{html,body{background:#fff!important}body>*:not(#printArea){display:none!important}#printArea{display:block;font-family:Arial,sans-serif;color:#000}
+#printArea h1{font-size:18pt;margin:0 0 4px;color:#00843D}#printArea table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-top:10px}
+#printArea th,#printArea td{border:1px solid #999;padding:4px 6px;text-align:left}#printArea th{background:#1F3864;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printArea .s td{background:#D9E1F2;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact}#printArea td.q{text-align:center;font-weight:bold;width:50px}}
+</style>
+</head>
+<body>
+<header><button id="gear" style="float:right;background:none;border:0;color:#fff;font-size:22px;margin-top:2px" aria-label="Settings">⚙</button><h1>Gulf Distributing Order</h1><div class="sub" id="sub"></div></header>
+<div id="ro"></div>
+<div class="tools">
+  <input id="q" class="search" type="search" placeholder="Search items…" autocomplete="off">
+  <div class="chips" id="chips"></div>
+</div>
+<main id="list"></main>
+<button class="fab" id="fab" aria-label="Add item">+</button>
+<div class="bar"><div class="sum" id="sum"></div><button class="btn o" id="histBtn">History</button><button class="btn g" id="revBtn">Review</button></div>
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+<script type="application/json" id="state">{"sections": ["BEER & MALT – MULTI-PACKS", "FLAVORED MALT – MULTI-PACKS", "SINGLES", "SHOTS / MINIS", "WATER", "G2G", "RED BULL – 8.4 oz", "RED BULL – 12 oz", "RED BULL – 16 oz", "RED BULL – 20 oz"], "items": [{"id": "i1", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "15 pk", "name": "Milwaukee's Best Light", "type": "Can", "last": null, "active": true}, {"id": "i2", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Miller High Life", "type": "Btl", "last": null, "active": true}, {"id": "i3", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Miller High Life", "type": "Can", "last": null, "active": true}, {"id": "i4", "sec": "BEER & MALT – MULTI-PACKS", "size": "16 oz", "pack": "4 pk", "name": "Miller High Life", "type": "Can", "last": null, "active": true}, {"id": "i5", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Miller High Life", "type": "Btl", "last": null, "active": true}, {"id": "i6", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Coors Light", "type": "Btl", "last": 2, "active": true}, {"id": "i7", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Coors Light", "type": "Btl", "last": null, "active": true}, {"id": "i8", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Coors Light", "type": "Can", "last": 2, "active": true}, {"id": "i9", "sec": "BEER & MALT – MULTI-PACKS", "size": "16 oz", "pack": "4 pk", "name": "Coors Light", "type": "Can", "last": null, "active": true}, {"id": "i10", "sec": "BEER & MALT – MULTI-PACKS", "size": "16 oz", "pack": "9 pk", "name": "Coors Light Aluminum", "type": "Btl", "last": null, "active": true}, {"id": "i11", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Coors Banquet", "type": "Btl", "last": 5, "active": true}, {"id": "i12", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Miller Lite", "type": "Btl", "last": 2, "active": true}, {"id": "i13", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Miller Lite", "type": "Btl", "last": null, "active": true}, {"id": "i14", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Miller Lite", "type": "Can", "last": 2, "active": true}, {"id": "i15", "sec": "BEER & MALT – MULTI-PACKS", "size": "16 oz", "pack": "4 pk", "name": "Miller Lite", "type": "Can", "last": 2, "active": true}, {"id": "i16", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "24 pk", "name": "Miller Lite", "type": "Can", "last": 2, "active": true}, {"id": "i17", "sec": "BEER & MALT – MULTI-PACKS", "size": "16 oz", "pack": "9 pk", "name": "Miller Lite Aluminum", "type": "Btl", "last": null, "active": true}, {"id": "i18", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "24 pk", "name": "Miller Lite 64", "type": "Can", "last": null, "active": true}, {"id": "i19", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Twisted Tea", "type": "Can", "last": 1, "active": true}, {"id": "i20", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Twisted Tea Half & Half", "type": "Can", "last": null, "active": true}, {"id": "i21", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Twisted Tea", "type": "Btl", "last": 1, "active": true}, {"id": "i22", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Twisted Tea Party Pack", "type": "Can", "last": null, "active": true}, {"id": "i23", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "White Claw Variety No. 1", "type": "Can", "last": null, "active": true}, {"id": "i24", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "White Claw Variety No. 2", "type": "Can", "last": null, "active": true}, {"id": "i25", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "White Claw Variety No. 3", "type": "Can", "last": null, "active": true}, {"id": "i26", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Corona Extra", "type": "Btl", "last": 3, "active": true}, {"id": "i27", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Corona Extra", "type": "Btl", "last": null, "active": true}, {"id": "i28", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Corona Extra", "type": "Can", "last": null, "active": true}, {"id": "i29", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Corona Familiar", "type": "Btl", "last": 5, "active": true}, {"id": "i30", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Corona Sunbrew", "type": "Btl", "last": null, "active": true}, {"id": "i31", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Pacifico", "type": "Can", "last": 1, "active": true}, {"id": "i32", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Dos Equis", "type": "Btl", "last": 1, "active": true}, {"id": "i33", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Dos Equis", "type": "Btl", "last": null, "active": true}, {"id": "i34", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Modelo Especial", "type": "Btl", "last": 3, "active": true}, {"id": "i35", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Modelo Especial", "type": "Btl", "last": 2, "active": true}, {"id": "i36", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Modelo Especial", "type": "Can", "last": 9, "active": true}, {"id": "i37", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Modelo Chelada", "type": "Can", "last": null, "active": true}, {"id": "i38", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Yuengling", "type": "Btl", "last": null, "active": true}, {"id": "i39", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Yuengling", "type": "Btl", "last": null, "active": true}, {"id": "i40", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Sam Adams", "type": "Btl", "last": null, "active": true}, {"id": "i41", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Blue Moon", "type": "Btl", "last": null, "active": true}, {"id": "i42", "sec": "BEER & MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Heineken", "type": "Btl", "last": 3, "active": true}, {"id": "i43", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Green Apple", "type": "Btl", "last": 1, "active": true}, {"id": "i44", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Coconut", "type": "Btl", "last": null, "active": false}, {"id": "i45", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Regular", "type": "Btl", "last": null, "active": true}, {"id": "i46", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Screwdriver", "type": "Btl", "last": null, "active": true}, {"id": "i47", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Pineapple", "type": "Btl", "last": null, "active": true}, {"id": "i48", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Strawberry Kiwi", "type": "Btl", "last": null, "active": true}, {"id": "i49", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Red, White & Berry", "type": "Btl", "last": null, "active": true}, {"id": "i50", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Smirnoff Ice Blue Raspberry", "type": "Btl", "last": null, "active": true}, {"id": "i51", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Mike's Hard Lemonade", "type": "Btl", "last": null, "active": true}, {"id": "i52", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Mike's Hard Black Cherry", "type": "Btl", "last": null, "active": true}, {"id": "i53", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Mike's Hard Strawberry Lemonade", "type": "Btl", "last": null, "active": true}, {"id": "i54", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "16 oz", "pack": "4 pk", "name": "Mike's Hard Cranberry", "type": "Can", "last": null, "active": true}, {"id": "i55", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "16 oz", "pack": "4 pk", "name": "Mike's Hard Piña Colada", "type": "Can", "last": null, "active": true}, {"id": "i56", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Redd's Apple Ale", "type": "Btl", "last": 1, "active": true}, {"id": "i57", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Angry Orchard Crisp Apple", "type": "Btl", "last": 1, "active": true}, {"id": "i58", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Angry Orchard Green Apple", "type": "Btl", "last": 2, "active": true}, {"id": "i59", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Seagram's Jamaican Me Happy", "type": "Can", "last": null, "active": true}, {"id": "i60", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Captain Morgan Slice Variety", "type": "Can", "last": null, "active": true}, {"id": "i61", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Cayman Jack Strawberry Margarita", "type": "Btl", "last": null, "active": true}, {"id": "i62", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "6 pk", "name": "Cayman Jack Lime Margarita", "type": "Btl", "last": null, "active": true}, {"id": "i63", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "12 oz", "pack": "12 pk", "name": "Cayman Jack Spicy", "type": "Can", "last": null, "active": false}, {"id": "i64", "sec": "FLAVORED MALT – MULTI-PACKS", "size": "", "pack": "", "name": "Make Me Happy (name unclear on sheet)", "type": "", "last": null, "active": false}, {"id": "i65", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Heineken", "type": "Btl", "last": null, "active": true}, {"id": "i66", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Smirnoff Ice Screwdriver", "type": "Btl", "last": null, "active": true}, {"id": "i67", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Corona Extra", "type": "Btl", "last": null, "active": true}, {"id": "i68", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Modelo Especial", "type": "Btl", "last": null, "active": true}, {"id": "i69", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Modelo Chelada", "type": "Can", "last": 3, "active": true}, {"id": "i70", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Modelo Chelada Limón y Sal (Lime)", "type": "Can", "last": null, "active": true}, {"id": "i71", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Modelo Especial", "type": "Can", "last": null, "active": true}, {"id": "i72", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "White Claw Mango", "type": "Can", "last": null, "active": true}, {"id": "i73", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "White Claw Strawberry", "type": "Can", "last": null, "active": true}, {"id": "i74", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "White Claw Watermelon", "type": "Can", "last": null, "active": true}, {"id": "i75", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "White Claw Surge Pineapple", "type": "Can", "last": null, "active": true}, {"id": "i76", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "White Claw Surge Berry", "type": "Can", "last": null, "active": true}, {"id": "i77", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "White Claw Surge Blood Orange", "type": "Can", "last": null, "active": true}, {"id": "i78", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Twisted Tea", "type": "Can", "last": 1, "active": true}, {"id": "i79", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Twisted Tea Half & Half", "type": "Can", "last": null, "active": true}, {"id": "i80", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Twisted Tea Peach", "type": "Can", "last": null, "active": true}, {"id": "i81", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Twisted Tea Raspberry", "type": "Can", "last": 2, "active": true}, {"id": "i82", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Mike's Hard Mango", "type": "Can", "last": null, "active": true}, {"id": "i83", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Mike's Hard Lemonade", "type": "Can", "last": 4, "active": true}, {"id": "i84", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Mike's Hard Cranberry", "type": "Can", "last": 1, "active": true}, {"id": "i85", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Mike's Hard Blue Freeze", "type": "Can", "last": null, "active": false}, {"id": "i86", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Mike's Hard Red Freeze", "type": "Can", "last": null, "active": false}, {"id": "i87", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Angry Orchard", "type": "Btl", "last": null, "active": false}, {"id": "i88", "sec": "SINGLES", "size": "Single", "pack": "1", "name": "Cayman Jack", "type": "Can", "last": null, "active": false}, {"id": "i89", "sec": "SINGLES", "size": "25 oz", "pack": "1", "name": "Coors Light", "type": "Can", "last": null, "active": true}, {"id": "i90", "sec": "SINGLES", "size": "25 oz", "pack": "1", "name": "Miller Lite", "type": "Can", "last": null, "active": true}, {"id": "i91", "sec": "SINGLES", "size": "25 oz", "pack": "1", "name": "Redd's Apple Ale", "type": "Can", "last": null, "active": true}, {"id": "i92", "sec": "SHOTS / MINIS", "size": "Shot", "pack": "1", "name": "Piña Colada", "type": "", "last": null, "active": true}, {"id": "i93", "sec": "SHOTS / MINIS", "size": "Shot", "pack": "1", "name": "Pineapple", "type": "", "last": null, "active": true}, {"id": "i94", "sec": "SHOTS / MINIS", "size": "Shot", "pack": "1", "name": "Margarita", "type": "", "last": null, "active": true}, {"id": "i95", "sec": "SHOTS / MINIS", "size": "187 mL", "pack": "1", "name": "Southern Comfort", "type": "", "last": null, "active": true}, {"id": "i96", "sec": "SHOTS / MINIS", "size": "100 mL", "pack": "1", "name": "Fireball", "type": "", "last": 1, "active": true}, {"id": "i97", "sec": "SHOTS / MINIS", "size": "200 mL", "pack": "1", "name": "Fireball Apple", "type": "", "last": null, "active": true}, {"id": "i98", "sec": "WATER", "size": "500 mL", "pack": "1", "name": "Fiji Water", "type": "Btl", "last": null, "active": true}, {"id": "i99", "sec": "WATER", "size": "1 Liter", "pack": "1", "name": "Fiji Water", "type": "Btl", "last": null, "active": true}, {"id": "i100", "sec": "G2G", "size": "Single", "pack": "1", "name": "G2G Tropical", "type": "", "last": null, "active": false}, {"id": "i101", "sec": "G2G", "size": "Single", "pack": "1", "name": "G2G Fusion", "type": "", "last": null, "active": false}, {"id": "i102", "sec": "G2G", "size": "Single", "pack": "1", "name": "G2G Grape", "type": "", "last": null, "active": false}, {"id": "i103", "sec": "G2G", "size": "Single", "pack": "1", "name": "G2G Fruit Punch", "type": "", "last": null, "active": false}, {"id": "i104", "sec": "G2G", "size": "Single", "pack": "1", "name": "G2G Strawberry Kiwi", "type": "", "last": null, "active": false}, {"id": "i105", "sec": "G2G", "size": "Single", "pack": "1", "name": "G2G Apple", "type": "", "last": null, "active": false}, {"id": "i106", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Regular", "type": "Can", "last": null, "active": true}, {"id": "i107", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Sugar Free", "type": "Can", "last": null, "active": true}, {"id": "i108", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Watermelon", "type": "Can", "last": null, "active": true}, {"id": "i109", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Coconut", "type": "Can", "last": 1, "active": true}, {"id": "i110", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Tropical", "type": "Can", "last": 1, "active": true}, {"id": "i111", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Strawberry Apricot", "type": "Can", "last": null, "active": true}, {"id": "i112", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Juneberry", "type": "Can", "last": null, "active": true}, {"id": "i113", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Pistachio Berries", "type": "Can", "last": 1, "active": true}, {"id": "i114", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull White Peach", "type": "Can", "last": null, "active": true}, {"id": "i115", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull White Peach Zero / SF", "type": "Can", "last": null, "active": true}, {"id": "i116", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Vanilla Berry", "type": "Can", "last": null, "active": true}, {"id": "i117", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Vanilla Berry Zero / SF", "type": "Can", "last": null, "active": true}, {"id": "i118", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "4 pk", "name": "Red Bull Regular", "type": "Can", "last": null, "active": true}, {"id": "i119", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Blueberry", "type": "Can", "last": null, "active": false}, {"id": "i120", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Curuba", "type": "Can", "last": null, "active": false}, {"id": "i121", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Grapefruit Blossom", "type": "Can", "last": null, "active": false}, {"id": "i122", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull SF Grapefruit", "type": "Can", "last": null, "active": false}, {"id": "i123", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull Wild Berries", "type": "Can", "last": null, "active": false}, {"id": "i124", "sec": "RED BULL – 8.4 oz", "size": "8.4 oz", "pack": "Case", "name": "Red Bull SF Wild Berries", "type": "Can", "last": null, "active": false}, {"id": "i125", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Regular", "type": "Can", "last": 1, "active": true}, {"id": "i126", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Sugar Free", "type": "Can", "last": null, "active": true}, {"id": "i127", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Watermelon", "type": "Can", "last": 1, "active": true}, {"id": "i128", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull SF Watermelon", "type": "Can", "last": null, "active": true}, {"id": "i129", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Coconut", "type": "Can", "last": 2, "active": true}, {"id": "i130", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Tropical", "type": "Can", "last": 1, "active": true}, {"id": "i131", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Strawberry Apricot", "type": "Can", "last": 1, "active": true}, {"id": "i132", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull SF Strawberry Apricot", "type": "Can", "last": null, "active": true}, {"id": "i133", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Juneberry", "type": "Can", "last": 1, "active": true}, {"id": "i134", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull SF Juneberry", "type": "Can", "last": null, "active": true}, {"id": "i135", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull SF Monk", "type": "Can", "last": null, "active": true}, {"id": "i136", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Pistachio Berries", "type": "Can", "last": null, "active": true}, {"id": "i137", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Fuji Apple", "type": "Can", "last": null, "active": true}, {"id": "i138", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Wild Berries", "type": "Can", "last": null, "active": true}, {"id": "i139", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Vanilla Berry", "type": "Can", "last": 1, "active": true}, {"id": "i140", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Vanilla Berry SF", "type": "Can", "last": null, "active": true}, {"id": "i141", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull White Peach", "type": "Can", "last": 1, "active": true}, {"id": "i142", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull White Peach Zero", "type": "Can", "last": null, "active": true}, {"id": "i143", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Blueberry", "type": "Can", "last": null, "active": false}, {"id": "i144", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Curuba", "type": "Can", "last": null, "active": false}, {"id": "i145", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull Grapefruit Blossom", "type": "Can", "last": null, "active": false}, {"id": "i146", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull SF Grapefruit", "type": "Can", "last": null, "active": false}, {"id": "i147", "sec": "RED BULL – 12 oz", "size": "12 oz", "pack": "Case", "name": "Red Bull SF Wild Berries", "type": "Can", "last": null, "active": false}, {"id": "i148", "sec": "RED BULL – 16 oz", "size": "16 oz", "pack": "Case", "name": "Red Bull Regular", "type": "Can", "last": 3, "active": true}, {"id": "i149", "sec": "RED BULL – 16 oz", "size": "16 oz", "pack": "Case", "name": "Red Bull Sugar Free", "type": "Can", "last": null, "active": true}, {"id": "i150", "sec": "RED BULL – 20 oz", "size": "20 oz", "pack": "Case", "name": "Red Bull Regular", "type": "Can", "last": 1, "active": true}, {"id": "i151", "sec": "RED BULL – 20 oz", "size": "20 oz", "pack": "Case", "name": "Red Bull Sugar Free", "type": "Can", "last": 1, "active": true}], "lastOrderDate": "", "history": [], "rep": "", "nextId": 152, "email": "", "cc": ""}</script>
+<script id="app">
+(function(){
+var ST=JSON.parse(document.getElementById('state').textContent);
+var DRAFT_KEY='gulfOrderDraft_v1';
+var draft={};try{draft=JSON.parse(localStorage.getItem(DRAFT_KEY)||'{}')||{};}catch(e){draft={};}
+var filter='active',query='',collapsed={},art=null,canWrite=true;
+try{var ui=JSON.parse(sessionStorage.getItem('gulfUI')||'null');if(ui){filter=ui.filter||filter;collapsed=ui.collapsed||{};setTimeout(function(){window.scrollTo(0,ui.y||0)},50);sessionStorage.removeItem('gulfUI');}}catch(e){}
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function saveDraft(){try{localStorage.setItem(DRAFT_KEY,JSON.stringify(draft))}catch(e){}}
+function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){el.style.display='none'},2200)}
+function fmtDate(d){if(!d)return'';var x=new Date(d);return isNaN(x)?d:x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
+function desc(it){return [it.size,it.pack&&it.pack!=='1'?it.pack:'',it.type].filter(Boolean).join(' · ')}
+
+function chips(){var defs=[['active','Active'],['ordered','On this order'],['inactive','Inactive'],['all','All']];
+  $('chips').innerHTML=defs.map(function(d){return '<button class="chip'+(filter===d[0]?' on':'')+'" data-f="'+d[0]+'">'+d[1]+'</button>'}).join('');}
+function match(it){
+  if(filter==='active'&&!it.active)return false;
+  if(filter==='inactive'&&it.active)return false;
+  if(filter==='ordered'&&!(draft[it.id]>0))return false;
+  if(query){var h=(it.name+' '+it.size+' '+it.pack+' '+it.type+' '+it.sec).toLowerCase();return query.split(/\s+/).every(function(w){return h.indexOf(w)>=0})}
+  return true;}
+function render(){
+  chips();
+  $('sub').textContent='KRRS-NA Bridgeport · BP Food Mart'+(ST.lastOrderDate?' · Last order '+fmtDate(ST.lastOrderDate):'');
+  var html='',any=false;
+  ST.sections.forEach(function(sec){
+    var its=ST.items.filter(function(it){return it.sec===sec&&match(it)});
+    if(!its.length)return;any=true;
+    var open=query||!collapsed[sec];
+    var oc=its.filter(function(it){return draft[it.id]>0}).length;
+    html+='<div class="sec"><div class="sech'+(/^RED BULL/.test(sec)?' rb':'')+'" data-sec="'+esc(sec)+'"><span>'+(open?'▾ ':'▸ ')+esc(sec)+'</span><span class="cnt">'+its.length+' items'+(oc?' · '+oc+' ordered':'')+'</span></div>';
+    if(open)its.forEach(function(it){
+      var q=draft[it.id]||0;
+      html+='<div class="item'+(it.active?'':' inactive')+(q>0?' ordered':'')+'" data-id="'+it.id+'"><div class="info" data-edit="'+it.id+'"><div class="nm">'+esc(it.name)+'</div><div class="meta"><span>'+esc(desc(it))+'</span>'+
+        (it.last!=null&&it.last!==''?'<span class="last">Last: '+esc(it.last)+'</span>':'<span class="last none">Last: –</span>')+
+        (it.active?'':'<span class="tag in">INACTIVE</span>')+'</div></div>'+
+        (it.active?'<div class="step"><button data-m="'+it.id+'" aria-label="minus">−</button><input inputmode="numeric" pattern="[0-9]*" data-q="'+it.id+'" value="'+(q||'')+'" placeholder="0"><button class="plus" data-p="'+it.id+'" aria-label="plus">+</button></div>':'')+'</div>';
+    });
+    html+='</div>';
+  });
+  $('list').innerHTML=any?html:'<div class="empty">No items match.</div>';
+  summary();
+}
+function summary(){var lines=0,units=0;ST.items.forEach(function(it){var q=draft[it.id]||0;if(q>0&&it.active){lines++;units+=q}});
+  $('sum').innerHTML='<b>'+units+'</b> units · '+lines+' items';}
+function setQty(id,q){q=Math.max(0,Math.min(999,parseInt(q,10)||0));if(q)draft[id]=q;else delete draft[id];saveDraft();
+  var row=document.querySelector('.item[data-id="'+id+'"]');if(row){row.classList.toggle('ordered',q>0);var inp=row.querySelector('input');if(inp&&document.activeElement!==inp)inp.value=q||'';}
+  summary();}
+function find(id){for(var i=0;i<ST.items.length;i++)if(ST.items[i].id===id)return ST.items[i];}
+
+// ---------- save on this device ----------
+var SKEY='gulfOrderState_v1';
+try{var ls=localStorage.getItem(SKEY);if(ls){ST=JSON.parse(ls)}}catch(e){}
+function persist(msg){try{localStorage.setItem(SKEY,JSON.stringify(ST));toast(msg)}catch(e){toast('Could not save on this device')}render();}
+// ---------- sheets ----------
+function open(html){$('sheet').innerHTML=html;$('ov').classList.add('show');}
+function close(){$('ov').classList.remove('show');}
+$('ov').addEventListener('click',function(e){if(e.target===$('ov'))close()});
+
+function secOptions(sel){return ST.sections.map(function(s){return '<option'+(s===sel?' selected':'')+'>'+esc(s)+'</option>'}).join('')+'<option value="__new">+ New section…</option>'}
+function editItem(id){
+  var it=id?find(id):{id:null,sec:ST.sections[0],size:'12 oz',pack:'6 pk',name:'',type:'Can',last:null,active:true};
+  open('<h2>'+(id?'Edit item':'Add new item')+'</h2>'+
+  '<label>Product name</label><input class="f" id="e_name" value="'+esc(it.name)+'" placeholder="e.g. Michelob Ultra">'+
+  '<label>Section</label><select class="f" id="e_sec">'+secOptions(it.sec)+'</select><input class="f" id="e_newsec" placeholder="New section name" style="display:none;margin-top:6px">'+
+  '<div class="row"><div><label>Size</label><input class="f" id="e_size" value="'+esc(it.size)+'"></div><div><label>Pack</label><input class="f" id="e_pack" value="'+esc(it.pack)+'"></div></div>'+
+  '<div class="row"><div><label>Type</label><select class="f" id="e_type">'+['Can','Btl',''].map(function(t){return '<option value="'+t+'"'+(t===it.type?' selected':'')+'>'+(t||'—')+'</option>'}).join('')+'</select></div>'+
+  '<div><label>Last order qty</label><input class="f" id="e_last" inputmode="numeric" value="'+(it.last==null?'':esc(it.last))+'"></div></div>'+
+  '<label>Status</label><div class="tog" id="e_st"><button data-v="1" class="a'+(it.active?' on':'')+'">Active</button><button data-v="0" class="i'+(it.active?'':' on')+'">Inactive</button></div>'+
+  '<div class="acts">'+(id?'<button class="btn r" id="e_del">Delete</button>':'')+'<button class="btn o" id="e_cancel">Cancel</button><button class="btn g" id="e_save">Save</button></div>'+
+  '<div class="note">Inactive items stay on the list (greyed out) but can\'t be ordered.</div>');
+  var active=it.active;
+  $('e_sec').onchange=function(){$('e_newsec').style.display=this.value==='__new'?'block':'none'};
+  $('e_st').onclick=function(e){var b=e.target.closest('button');if(!b)return;active=b.dataset.v==='1';[].forEach.call(this.children,function(c){c.classList.toggle('on',c===b)})};
+  $('e_cancel').onclick=close;
+  if(id)$('e_del').onclick=function(){
+    var b=this;if(b.dataset.c){ST.items=ST.items.filter(function(x){return x.id!==id});delete draft[id];saveDraft();close();persist('Item deleted');}
+    else{b.dataset.c=1;b.textContent='Tap again to delete';}};
+  $('e_save').onclick=function(){
+    var name=$('e_name').value.trim();if(!name){$('e_name').focus();return;}
+    var sec=$('e_sec').value;if(sec==='__new'){sec=$('e_newsec').value.trim().toUpperCase();if(!sec){$('e_newsec').focus();return;}if(ST.sections.indexOf(sec)<0)ST.sections.push(sec);}
+    var lv=$('e_last').value.trim();var last=lv===''?null:(isNaN(+lv)?lv:+lv);
+    var obj={sec:sec,name:name,size:$('e_size').value.trim(),pack:$('e_pack').value.trim(),type:$('e_type').value,last:last,active:active};
+    if(id){var t=find(id);for(var k in obj)t[k]=obj[k];if(!active){delete draft[id];saveDraft();}}
+    else{obj.id='i'+(ST.nextId++);var idx=-1;ST.items.forEach(function(x,i){if(x.sec===sec)idx=i});if(idx<0)ST.items.push(obj);else ST.items.splice(idx+1,0,obj);}
+    close();persist(id?'Item updated':'Item added');
+  };
+}
+function orderLines(){return ST.items.filter(function(it){return it.active&&draft[it.id]>0})}
+function orderText(lines){var d=new Date().toLocaleDateString();var t='Gulf Distributing order – KRRS-NA Bridgeport (BP Food Mart)\nDate: '+d+'\n';var cur='';
+  lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;t+='\n'+cur+'\n'}t+='  '+draft[it.id]+' x '+it.name+' ('+desc(it)+')\n'});
+  var u=lines.reduce(function(a,it){return a+draft[it.id]},0);return t+'\nTotal: '+u+' units, '+lines.length+' items';}
+function review(){
+  var lines=orderLines();
+  if(!lines.length){open('<h2>Review order</h2><div class="empty">Nothing on this order yet.<br>Use + next to an item to add it.</div><div class="acts"><button class="btn o" id="r_x">Close</button></div>');$('r_x').onclick=close;return;}
+  var cur='',h='';lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;h+='<div class="h"><span>'+esc(cur)+'</span><span>Qty</span></div>'}h+='<div><span>'+esc(it.name)+' <span style="color:#6b7280">'+esc(desc(it))+'</span></span><b>'+draft[it.id]+'</b></div>'});
+  var u=lines.reduce(function(a,it){return a+draft[it.id]},0);
+  open('<h2>Review order</h2><div class="rv">'+h+'<div class="h"><span>TOTAL ('+lines.length+' items)</span><span>'+u+'</span></div></div>'+
+  '<div class="acts"><button class="btn" id="r_print">🖨 Print / PDF</button><button class="btn" id="r_mail">✉ Email order</button></div>'+
+  '<div class="acts"><button class="btn o" id="r_copy">Copy as text</button><button class="btn g" id="r_done">Order placed ✓</button></div>'+
+  '<div class="acts"><button class="btn r" id="r_clr">Clear order</button><button class="btn o" id="r_x">Close</button></div>'+
+  '<div class="note"><b>Order placed</b> saves these quantities as each item\'s new "Last" qty, adds the order to History, and clears the list for next time.</div>');
+  $('r_x').onclick=close;
+  $('r_print').onclick=function(){printOrder(lines)};
+  $('r_mail').onclick=function(){emailOrder(lines)};
+  $('r_copy').onclick=function(){var t=orderText(lines);try{navigator.clipboard.writeText(t).then(function(){toast('Copied – paste into text/email')},function(){showText(t)})}catch(e){showText(t)}};
+  $('r_clr').onclick=function(){var b=this;if(b.dataset.c){draft={};saveDraft();close();render();toast('Order cleared')}else{b.dataset.c=1;b.textContent='Tap again to clear'}};
+  $('r_done').onclick=function(){
+    var now=new Date().toISOString().slice(0,10);
+    ST.history.unshift({date:now,lines:lines.map(function(it){return [it.name+' ('+desc(it)+')',draft[it.id]]})});
+    if(ST.history.length>52)ST.history.length=52;
+    lines.forEach(function(it){it.last=draft[it.id]});
+    ST.lastOrderDate=now;draft={};saveDraft();close();persist('Order saved – Last qty updated');
+  };
+}
+function showText(t){open('<h2>Order text</h2><textarea class="f" style="height:300px" readonly>'+esc(t)+'</textarea><div class="note">Select all and copy.</div><div class="acts"><button class="btn o" id="t_x">Close</button></div>');$('t_x').onclick=close;}
+function printOrder(lines){
+  var d=new Date().toLocaleDateString(),cur='',rows='';
+  lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;rows+='<tr class="s"><td colspan="5">'+esc(cur)+'</td></tr>'}
+    rows+='<tr><td>'+esc(it.name)+'</td><td>'+esc(it.size)+'</td><td>'+esc(it.pack)+'</td><td>'+esc(it.type)+'</td><td class="q">'+draft[it.id]+'</td></tr>'});
+  var u=lines.reduce(function(a,it){return a+draft[it.id]},0);
+  $('printArea').innerHTML='<h1>Gulf Distributing – Beer &amp; Red Bull Order</h1><div>KRRS-NA Bridgeport LLC · BP Food Mart · Bridgeport, AL</div><div>Order date: '+d+' &nbsp;&nbsp; Sales rep: '+esc(ST.rep||'')+'</div>'+
+    '<table><tr><th>Product</th><th>Size</th><th>Pack</th><th>Type</th><th>Qty</th></tr>'+rows+'<tr class="s"><td colspan="4">TOTAL ('+lines.length+' items)</td><td class="q">'+u+'</td></tr></table>'+
+    '<p style="margin-top:30px">Received by: ______________________ &nbsp;&nbsp;&nbsp; Date: ____________</p>';
+  close();setTimeout(function(){window.print()},150);}
+function emailOrder(lines){
+  open('<h2>Email order</h2><label>Send to</label><input class="f" id="m_to" type="email" value="'+esc(ST.email||'')+'" placeholder="rep@gulfdistributing.com">'+
+   '<label>CC (optional)</label><input class="f" id="m_cc" type="email" value="'+esc(ST.cc||'')+'">'+
+   '<div class="note">Opens your mail app with the order filled in – then tap Send there.</div>'+
+   '<div class="acts"><button class="btn o" id="m_x">Cancel</button><button class="btn g" id="m_send">Open mail app</button></div>');
+  $('m_x').onclick=close;
+  $('m_send').onclick=function(){var em=$('m_to').value.trim(),cc=$('m_cc').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('m_to').focus();toast('Enter a valid email');return;}
+    if(em!==ST.email||cc!==(ST.cc||'')){ST.email=em;ST.cc=cc;try{localStorage.setItem(SKEY,JSON.stringify(ST))}catch(e){}}
+    var url='mailto:'+em+'?'+(cc?'cc='+encodeURIComponent(cc)+'&':'')+'subject='+encodeURIComponent('Order – BP Food Mart Bridgeport – '+new Date().toLocaleDateString())+'&body='+encodeURIComponent(orderText(lines)+'\n\nThank you,\nSatyapal\nBP Food Mart – Bridgeport, AL');
+    close();window.location.href=url;};}
+function backup(){var blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Gulf Order Backup '+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);}
+function restore(file){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d.items||!d.sections)throw 0;ST=d;close();persist('Backup restored')}catch(e){toast('That file is not a Gulf Order backup')}};r.readAsText(file);}
+function settings(){
+  open('<h2>Settings</h2><label>Sales rep (name · phone)</label><input class="f" id="s_rep" value="'+esc(ST.rep||'')+'">'+
+  '<label>Order email – send to</label><input class="f" id="s_em" type="email" value="'+esc(ST.email||'')+'">'+
+  '<label>CC (optional)</label><input class="f" id="s_cc" type="email" value="'+esc(ST.cc||'')+'">'+
+  '<div class="acts"><button class="btn o" id="s_x">Cancel</button><button class="btn g" id="s_ok">Save</button></div>'+
+  '<label style="margin-top:20px">Move your list to another phone/tablet</label><div class="acts" style="margin-top:4px"><button class="btn o" id="s_bk">Save backup file</button><label class="btn o" style="text-align:center;margin:0;color:var(--n)">Restore backup<input type="file" accept=".json,application/json" id="s_rs" style="display:none"></label></div>'+
+  '<div class="note">Your items, Last qty and history are saved on this device only.</div>');
+  $('s_bk').onclick=backup;$('s_rs').onchange=function(){if(this.files[0])restore(this.files[0])};
+  $('s_x').onclick=close;$('s_ok').onclick=function(){ST.rep=$('s_rep').value.trim();ST.email=$('s_em').value.trim();ST.cc=$('s_cc').value.trim();close();persist('Settings saved')};}
+function history(){
+  var h=ST.history.length?ST.history.map(function(o,i){var u=o.lines.reduce(function(a,l){return a+l[1]},0);
+    return '<details style="margin-bottom:8px"><summary style="padding:10px;background:#eef2f8;border-radius:10px;font-weight:600">'+fmtDate(o.date)+' — '+u+' units, '+o.lines.length+' items</summary><div class="rv" style="margin-top:6px">'+o.lines.map(function(l){return '<div><span>'+esc(l[0])+'</span><b>'+l[1]+'</b></div>'}).join('')+'</div></details>'}).join('')
+    :'<div class="empty">No orders saved yet.<br>Tap <b>Order placed ✓</b> in Review to save one.</div>';
+  open('<h2>Order history</h2>'+h+'<div class="acts"><button class="btn o" id="h_x">Close</button></div>');$('h_x').onclick=close;}
+
+// ---------- events ----------
+$('chips').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;filter=b.dataset.f;render();window.scrollTo(0,0)};
+$('q').oninput=function(){query=this.value.trim().toLowerCase();render()};
+$('list').addEventListener('click',function(e){
+  var t=e.target,s;
+  if((s=t.closest('.sech'))){var k=s.dataset.sec;collapsed[k]=!collapsed[k];render();return;}
+  if(t.dataset.p){setQty(t.dataset.p,(draft[t.dataset.p]||0)+1);return;}
+  if(t.dataset.m){setQty(t.dataset.m,(draft[t.dataset.m]||0)-1);return;}
+  if((s=t.closest('[data-edit]'))){editItem(s.dataset.edit);}
+});
+$('list').addEventListener('input',function(e){if(e.target.dataset.q)setQty(e.target.dataset.q,e.target.value)});
+$('list').addEventListener('focusin',function(e){if(e.target.dataset.q)e.target.select()});
+$('fab').onclick=function(){editItem(null)};
+$('revBtn').onclick=review;$('gear').onclick=settings;$('histBtn').onclick=history;
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
+})();
+</script>
+</body>
+</html>
