@@ -137,7 +137,9 @@ function render(){
   summary();
 }
 function summary(){var lines=0,units=0;ST.items.forEach(function(it){var q=draft[it.id]||0;if(q>0&&it.active){lines++;units+=q}});
-  $('sum').innerHTML='<b>'+units+'</b> units · '+lines+' items';}
+  var rb=$('revBtn');
+  if(lines){$('sum').innerHTML='<b>'+units+'</b> units · '+lines+' items';rb.innerHTML='Review &amp; Submit ➜';rb.dataset.mode='rev';rb.style.flex='';}
+  else{$('sum').innerHTML='';rb.innerHTML='＋ Create New Order';rb.dataset.mode='new';rb.style.flex='1';}}
 function setQty(id,q){q=Math.max(0,Math.min(999,parseInt(q,10)||0));if(q)draft[id]=q;else delete draft[id];saveDraft();
   var row=document.querySelector('.item[data-id="'+id+'"]');if(row){row.classList.toggle('ordered',q>0);var inp=row.querySelector('input');if(inp&&document.activeElement!==inp)inp.value=q||'';}
   summary();chips();}
@@ -288,7 +290,7 @@ $('list').addEventListener('click',function(e){
 $('list').addEventListener('input',function(e){if(e.target.dataset.q)setQty(e.target.dataset.q,e.target.value)});
 $('list').addEventListener('focusin',function(e){if(e.target.dataset.q)e.target.select()});
 $('fab').onclick=function(){editItem(null)};
-$('revBtn').onclick=review;$('gear').onclick=settings;
+$('revBtn').onclick=function(){if(this.dataset.mode==='new'){filter='active';query='';$('q').value='';close();render();window.scrollTo(0,0);toast('Tap + next to the items you need');}else review();};$('gear').onclick=settings;
 $('list').addEventListener('click',function(e){var b=e.target.closest('[data-co]');if(!b)return;var o=ST.history[+b.dataset.i];if(!o)return;if(b.dataset.co==='p')printOrder(o);else emailOrder(o,null);});
 $('newOrd').onclick=function(){
   var n=Object.keys(draft).length;
