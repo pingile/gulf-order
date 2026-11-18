@@ -76,7 +76,7 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 </style>
 </head>
 <body>
-<header><button id="gear" style="float:right;background:none;border:0;color:#fff;font-size:22px;margin-top:2px" aria-label="Settings">⚙</button><h1>Gulf Distributing Order</h1><div class="sub" id="sub"></div></header>
+<header><button id="newOrd" style="float:right;background:#fff;color:#00843D;border:0;border-radius:10px;padding:7px 11px;font-weight:700;font-size:14px;margin:2px 0 0 8px">+ New order</button><button id="gear" style="float:right;background:none;border:0;color:#fff;font-size:22px;margin-top:2px" aria-label="Settings">⚙</button><h1>Gulf Distributing Order</h1><div class="sub" id="sub"></div></header>
 <div id="ro"></div>
 <div class="tools">
   <input id="q" class="search" type="search" placeholder="Search items…" autocomplete="off">
@@ -84,7 +84,7 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 </div>
 <main id="list"></main>
 <button class="fab" id="fab" aria-label="Add item">+</button>
-<div class="bar"><div class="sum" id="sum"></div><button class="btn o" id="histBtn">History</button><button class="btn g" id="revBtn">Review</button></div>
+<div class="bar"><div class="sum" id="sum"></div><button class="btn o" id="histBtn">📋 History</button><button class="btn g" id="revBtn">Review</button></div>
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <div id="printArea"></div>
@@ -100,7 +100,7 @@ var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function saveDraft(){try{localStorage.setItem(DRAFT_KEY,JSON.stringify(draft))}catch(e){}}
 function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){el.style.display='none'},2200)}
-function fmtDate(d){if(!d)return'';var x=new Date(d);return isNaN(x)?d:x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
+function fmtDate(d){if(!d)return'';var x=new Date(/^\d{4}-\d{2}-\d{2}$/.test(d)?d+'T12:00':d);return isNaN(x)?d:x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
 function desc(it){return [it.size,it.pack&&it.pack!=='1'?it.pack:'',it.type].filter(Boolean).join(' · ')}
 
 function chips(){var defs=[['active','Active'],['ordered','On this order'],['inactive','Inactive'],['all','All']];
@@ -178,8 +178,9 @@ function editItem(id){
     close();persist(id?'Item updated':'Item added');
   };
 }
+function nextNo(){return 'GO-'+(ST.nextOrderNo||1001)}
 function orderLines(){return ST.items.filter(function(it){return it.active&&draft[it.id]>0})}
-function orderText(lines){var d=new Date().toLocaleDateString();var t='Gulf Distributing order – KRRS-NA Bridgeport (BP Food Mart)\nDate: '+d+'\n';var cur='';
+function orderText(lines){var d=new Date().toLocaleDateString();var t='Gulf Distributing order – KRRS-NA Bridgeport (BP Food Mart)\nOrder #: '+nextNo()+'\nDate: '+d+'\n';var cur='';
   lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;t+='\n'+cur+'\n'}t+='  '+draft[it.id]+' x '+it.name+' ('+desc(it)+')\n'});
   var u=lines.reduce(function(a,it){return a+draft[it.id]},0);return t+'\nTotal: '+u+' units, '+lines.length+' items';}
 function review(){
@@ -187,22 +188,22 @@ function review(){
   if(!lines.length){open('<h2>Review order</h2><div class="empty">Nothing on this order yet.<br>Use + next to an item to add it.</div><div class="acts"><button class="btn o" id="r_x">Close</button></div>');$('r_x').onclick=close;return;}
   var cur='',h='';lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;h+='<div class="h"><span>'+esc(cur)+'</span><span>Qty</span></div>'}h+='<div><span>'+esc(it.name)+' <span style="color:#6b7280">'+esc(desc(it))+'</span></span><b>'+draft[it.id]+'</b></div>'});
   var u=lines.reduce(function(a,it){return a+draft[it.id]},0);
-  open('<h2>Review order</h2><div class="rv">'+h+'<div class="h"><span>TOTAL ('+lines.length+' items)</span><span>'+u+'</span></div></div>'+
+  open('<h2>Review order <span style="font-size:14px;color:#6b7280">#'+nextNo()+'</span></h2><div class="rv">'+h+'<div class="h"><span>TOTAL ('+lines.length+' items)</span><span>'+u+'</span></div></div>'+
   '<div class="acts"><button class="btn" id="r_print">🖨 Print / PDF</button><button class="btn" id="r_mail">✉ Email order</button></div>'+
-  '<div class="acts"><button class="btn o" id="r_copy">Copy as text</button><button class="btn g" id="r_done">Order placed ✓</button></div>'+
+  '<div class="acts"><button class="btn o" id="r_copy">Copy as text</button><button class="btn g" id="r_done">✓ Complete order</button></div>'+
   '<div class="acts"><button class="btn r" id="r_clr">Clear order</button><button class="btn o" id="r_x">Close</button></div>'+
-  '<div class="note"><b>Order placed</b> saves these quantities as each item\'s new "Last" qty, adds the order to History, and clears the list for next time.</div>');
+  '<div class="note"><b>Complete order</b> (tap after you send it to Gulf) gives it order number <b>'+nextNo()+'</b>, saves a backup file, saves these quantities as each item\'s new "Last" qty, adds the order to History, and clears the list for next time.</div>');
   $('r_x').onclick=close;
   $('r_print').onclick=function(){printOrder(lines)};
   $('r_mail').onclick=function(){emailOrder(lines)};
   $('r_copy').onclick=function(){var t=orderText(lines);try{navigator.clipboard.writeText(t).then(function(){toast('Copied – paste into text/email')},function(){showText(t)})}catch(e){showText(t)}};
   $('r_clr').onclick=function(){var b=this;if(b.dataset.c){draft={};saveDraft();close();render();toast('Order cleared')}else{b.dataset.c=1;b.textContent='Tap again to clear'}};
   $('r_done').onclick=function(){
-    var now=new Date().toISOString().slice(0,10);
-    ST.history.unshift({date:now,lines:lines.map(function(it){return [it.name+' ('+desc(it)+')',draft[it.id]]})});
+    var dd=new Date(),now=dd.getFullYear()+'-'+('0'+(dd.getMonth()+1)).slice(-2)+'-'+('0'+dd.getDate()).slice(-2);
+    var no=nextNo();ST.nextOrderNo=(ST.nextOrderNo||1001)+1;ST.history.unshift({no:no,date:now,lines:lines.map(function(it){return [it.name+' ('+desc(it)+')',draft[it.id]]})});
     if(ST.history.length>52)ST.history.length=52;
     lines.forEach(function(it){it.last=draft[it.id]});
-    ST.lastOrderDate=now;draft={};saveDraft();close();persist('Order saved – Last qty updated');
+    ST.lastOrderDate=now;draft={};saveDraft();close();persist('Order '+no+' completed – saved in History');setTimeout(function(){backup('Gulf Order Backup '+no+' '+now+'.json')},400);
   };
 }
 function showText(t){open('<h2>Order text</h2><textarea class="f" style="height:300px" readonly>'+esc(t)+'</textarea><div class="note">Select all and copy.</div><div class="acts"><button class="btn o" id="t_x">Close</button></div>');$('t_x').onclick=close;}
@@ -211,7 +212,7 @@ function printOrder(lines){
   lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;rows+='<tr class="s"><td colspan="5">'+esc(cur)+'</td></tr>'}
     rows+='<tr><td>'+esc(it.name)+'</td><td>'+esc(it.size)+'</td><td>'+esc(it.pack)+'</td><td>'+esc(it.type)+'</td><td class="q">'+draft[it.id]+'</td></tr>'});
   var u=lines.reduce(function(a,it){return a+draft[it.id]},0);
-  $('printArea').innerHTML='<h1>Gulf Distributing – Beer &amp; Red Bull Order</h1><div>KRRS-NA Bridgeport LLC · BP Food Mart · Bridgeport, AL</div><div>Order date: '+d+' &nbsp;&nbsp; Sales rep: '+esc(ST.rep||'')+'</div>'+
+  $('printArea').innerHTML='<h1>Gulf Distributing – Beer &amp; Red Bull Order</h1><div>KRRS-NA Bridgeport LLC · BP Food Mart · Bridgeport, AL</div><div><b>Order #: '+nextNo()+'</b> &nbsp;&nbsp; Order date: '+d+' &nbsp;&nbsp; Sales rep: '+esc(ST.rep||'')+'</div>'+
     '<table><tr><th>Product</th><th>Size</th><th>Pack</th><th>Type</th><th>Qty</th></tr>'+rows+'<tr class="s"><td colspan="4">TOTAL ('+lines.length+' items)</td><td class="q">'+u+'</td></tr></table>'+
     '<p style="margin-top:30px">Received by: ______________________ &nbsp;&nbsp;&nbsp; Date: ____________</p>';
   close();setTimeout(function(){window.print()},150);}
@@ -224,9 +225,9 @@ function emailOrder(lines){
   $('m_send').onclick=function(){var em=$('m_to').value.trim(),cc=$('m_cc').value.trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('m_to').focus();toast('Enter a valid email');return;}
     if(em!==ST.email||cc!==(ST.cc||'')){ST.email=em;ST.cc=cc;try{localStorage.setItem(SKEY,JSON.stringify(ST))}catch(e){}}
-    var url='mailto:'+em+'?'+(cc?'cc='+encodeURIComponent(cc)+'&':'')+'subject='+encodeURIComponent('Order – BP Food Mart Bridgeport – '+new Date().toLocaleDateString())+'&body='+encodeURIComponent(orderText(lines)+'\n\nThank you,\nSatyapal\nBP Food Mart – Bridgeport, AL');
+    var url='mailto:'+em+'?'+(cc?'cc='+encodeURIComponent(cc)+'&':'')+'subject='+encodeURIComponent('Order '+nextNo()+' – BP Food Mart Bridgeport – '+new Date().toLocaleDateString())+'&body='+encodeURIComponent(orderText(lines)+'\n\nThank you,\nSatyapal\nBP Food Mart – Bridgeport, AL');
     close();window.location.href=url;};}
-function backup(){var blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Gulf Order Backup '+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);}
+function backup(fname){var blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(typeof fname==='string'&&fname)||('Gulf Order Backup '+new Date().toISOString().slice(0,10)+'.json');document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);}
 function restore(file){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d.items||!d.sections)throw 0;ST=d;close();persist('Backup restored')}catch(e){toast('That file is not a Gulf Order backup')}};r.readAsText(file);}
 function settings(){
   open('<h2>Settings</h2><label>Sales rep (name · phone)</label><input class="f" id="s_rep" value="'+esc(ST.rep||'')+'">'+
@@ -235,12 +236,12 @@ function settings(){
   '<div class="acts"><button class="btn o" id="s_x">Cancel</button><button class="btn g" id="s_ok">Save</button></div>'+
   '<label style="margin-top:20px">Move your list to another phone/tablet</label><div class="acts" style="margin-top:4px"><button class="btn o" id="s_bk">Save backup file</button><label class="btn o" style="text-align:center;margin:0;color:var(--n)">Restore backup<input type="file" accept=".json,application/json" id="s_rs" style="display:none"></label></div>'+
   '<div class="note">Your items, Last qty and history are saved on this device only.</div>');
-  $('s_bk').onclick=backup;$('s_rs').onchange=function(){if(this.files[0])restore(this.files[0])};
+  $('s_bk').onclick=function(){backup()};$('s_rs').onchange=function(){if(this.files[0])restore(this.files[0])};
   $('s_x').onclick=close;$('s_ok').onclick=function(){ST.rep=$('s_rep').value.trim();ST.email=$('s_em').value.trim();ST.cc=$('s_cc').value.trim();close();persist('Settings saved')};}
 function history(){
   var h=ST.history.length?ST.history.map(function(o,i){var u=o.lines.reduce(function(a,l){return a+l[1]},0);
-    return '<details style="margin-bottom:8px"><summary style="padding:10px;background:#eef2f8;border-radius:10px;font-weight:600">'+fmtDate(o.date)+' — '+u+' units, '+o.lines.length+' items</summary><div class="rv" style="margin-top:6px">'+o.lines.map(function(l){return '<div><span>'+esc(l[0])+'</span><b>'+l[1]+'</b></div>'}).join('')+'</div></details>'}).join('')
-    :'<div class="empty">No orders saved yet.<br>Tap <b>Order placed ✓</b> in Review to save one.</div>';
+    return '<details style="margin-bottom:8px"><summary style="padding:10px;background:#eef2f8;border-radius:10px;font-weight:600">'+(o.no?o.no+' · ':'')+fmtDate(o.date)+' — '+u+' units, '+o.lines.length+' items</summary><div class="rv" style="margin-top:6px">'+o.lines.map(function(l){return '<div><span>'+esc(l[0])+'</span><b>'+l[1]+'</b></div>'}).join('')+'</div></details>'}).join('')
+    :'<div class="empty">No orders saved yet.<br>Tap <b>✓ Complete order</b> in Review to save one.</div>';
   open('<h2>Order history</h2>'+h+'<div class="acts"><button class="btn o" id="h_x">Close</button></div>');$('h_x').onclick=close;}
 
 // ---------- events ----------
@@ -256,7 +257,14 @@ $('list').addEventListener('click',function(e){
 $('list').addEventListener('input',function(e){if(e.target.dataset.q)setQty(e.target.dataset.q,e.target.value)});
 $('list').addEventListener('focusin',function(e){if(e.target.dataset.q)e.target.select()});
 $('fab').onclick=function(){editItem(null)};
-$('revBtn').onclick=review;$('gear').onclick=settings;$('histBtn').onclick=history;
+$('revBtn').onclick=review;$('gear').onclick=settings;
+$('newOrd').onclick=function(){
+  var n=Object.keys(draft).length;
+  function start(){draft={};saveDraft();filter='active';query='';$('q').value='';close();render();window.scrollTo(0,0);toast('New order started – tap + to add items');}
+  if(!n){start();return;}
+  open('<h2>Start a new order?</h2><div class="note" style="font-size:15px;color:#333">The current order has '+n+' item(s) that were not completed (<b>✓ Complete order</b>). Starting a new order will clear them.</div>'+
+   '<div class="acts"><button class="btn o" id="n_x">Cancel</button><button class="btn g" id="n_rev">Review current</button></div><div class="acts"><button class="btn r" id="n_go">Clear &amp; start new</button></div>');
+  $('n_x').onclick=close;$('n_rev').onclick=function(){close();review()};$('n_go').onclick=start;};$('histBtn').onclick=history;
 render();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
 })();
