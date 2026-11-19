@@ -1,6 +1,6 @@
 {
- "name": "Gulf Order \u2013 Beer & Red Bull",
- "short_name": "Gulf Order",
+ "name": "Purchase Order Generator",
+ "short_name": "PO Generator",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
