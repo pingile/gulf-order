@@ -46,6 +46,10 @@ main{padding:8px 10px calc(110px + env(safe-area-inset-bottom))}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center}
 .bar .sum{flex:1;font-size:13px;color:var(--mut)}
 .bar .sum b{font-size:17px;color:#111}
+.home-h{font-size:13px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:18px 4px 4px}
+.link{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:8px;font-weight:600;color:var(--n);cursor:pointer}
+.prog{background:#fff7d6;border:1px solid #f0d27a;border-radius:12px;padding:14px;margin-top:10px}
+.tools.hide{display:none}
 .btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:700;background:var(--n);color:#fff}
 .btn.g{background:var(--g)}.btn.r{background:#b42318}.btn.o{background:#fff;color:var(--n);border:1px solid #cfd4da}
 .fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;width:56px;height:56px;border-radius:50%;border:0;background:var(--rb);color:#fff;font-size:30px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
@@ -54,7 +58,7 @@ main{padding:8px 10px calc(110px + env(safe-area-inset-bottom))}
 .sheet{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
 .sheet h2{margin:0 0 12px;font-size:18px;color:var(--n)}
 label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
-.f{width:100%;padding:11px;border:1px solid #cfd4da;border-radius:10px;font-size:16px;background:#fff}
+.f{font-family:inherit;width:100%;padding:11px;border:1px solid #cfd4da;border-radius:10px;font-size:16px;background:#fff}
 .row{display:flex;gap:8px}.row>*{flex:1}
 .tog{display:flex;border:1px solid #cfd4da;border-radius:10px;overflow:hidden}
 .tog button{flex:1;padding:11px;border:0;background:#fff;font-size:15px;font-weight:600;color:#555}
@@ -76,7 +80,7 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 </style>
 </head>
 <body>
-<header><button id="newOrd" style="float:right;background:#fff;color:#00843D;border:0;border-radius:10px;padding:7px 11px;font-weight:700;font-size:14px;margin:2px 0 0 8px">+ New order</button><button id="gear" style="float:right;background:none;border:0;color:#fff;font-size:22px;margin-top:2px" aria-label="Settings">⚙</button><h1>Gulf Distributing Order</h1><div class="sub" id="sub"></div></header>
+<header><button id="gear" style="float:right;background:none;border:0;color:#fff;font-size:22px;margin-top:2px" aria-label="Settings">⚙</button><button id="back" style="display:none;float:left;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:15px;font-weight:700;border-radius:10px;padding:7px 11px;margin:1px 10px 0 0">‹ Home</button><h1 id="ttl">Gulf Distributing Order</h1><div class="sub" id="sub"></div></header>
 <div id="ro"></div>
 <div class="tools">
   <input id="q" class="search" type="search" placeholder="Search items…" autocomplete="off">
@@ -84,7 +88,7 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 </div>
 <main id="list"></main>
 <button class="fab" id="fab" aria-label="Add item">+</button>
-<div class="bar"><div class="sum" id="sum"></div><button class="btn g" id="revBtn">Review &amp; Submit ➜</button></div>
+<div class="bar" id="bar"></div>
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <div id="printArea"></div>
@@ -92,58 +96,105 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 <script id="app">
 (function(){
 var ST=JSON.parse(document.getElementById('state').textContent);
-var DRAFT_KEY='gulfOrderDraft_v1';
-var draft={};try{draft=JSON.parse(localStorage.getItem(DRAFT_KEY)||'{}')||{};}catch(e){draft={};}
-var filter='active',query='',collapsed={},art=null,canWrite=true;
+var draft={};
+var view='home',itemsTab='carried',orderY=0,filter='active',query='',collapsed={},art=null,canWrite=true;
 try{var ui=JSON.parse(sessionStorage.getItem('gulfUI')||'null');if(ui){filter=ui.filter||filter;collapsed=ui.collapsed||{};setTimeout(function(){window.scrollTo(0,ui.y||0)},50);sessionStorage.removeItem('gulfUI');}}catch(e){}
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function saveDraft(){try{localStorage.setItem(DRAFT_KEY,JSON.stringify(draft))}catch(e){}}
+function dkey(){return 'gulfOrderDraft_'+ST.curLoc}
+function saveDraft(){try{localStorage.setItem(dkey(),JSON.stringify(draft))}catch(e){}}
+function loadDraft(){try{draft=JSON.parse(localStorage.getItem(dkey())||'{}')||{};}catch(e){draft={};}}
+function findLoc(id){for(var i=0;i<ST.locations.length;i++)if(ST.locations[i].id===id)return ST.locations[i];}
+function L(){return findLoc(ST.curLoc)}
+function lastOf(it){var v=L().last[it.id];return v==null?'':v}
+function ensureLoc(){
+  if(!ST.locations||!ST.locations.length){var last={};ST.items.forEach(function(it){if(it.last!=null&&it.last!==''){last[it.id]=it.last;}delete it.last;});
+    ST.locations=[{id:'L1',name:ST.locName||'KRRS-NA Bridgeport – BP Food Mart',addr:ST.locAddr||'',acct:ST.acct||'',rep:ST.rep||'',email:ST.email||'',cc:ST.cc||'',history:ST.history||[],nextOrderNo:ST.nextOrderNo||1001,last:last,lastOrderDate:ST.lastOrderDate||''}];
+    ST.curLoc='L1';ST.nextLocId=2;
+    try{var od=localStorage.getItem('gulfOrderDraft_v1');if(od&&!localStorage.getItem('gulfOrderDraft_L1'))localStorage.setItem('gulfOrderDraft_L1',od);}catch(e){}}
+  ST.locations.forEach(function(l){l.history=l.history||[];l.last=l.last||{};l.nextOrderNo=l.nextOrderNo||1001;
+    if(!l.items){l.items=JSON.parse(JSON.stringify(ST.items||[]));l.items.forEach(function(it){delete it.last});l.sections=(ST.sections||[]).slice();}});
+  delete ST.items;delete ST.sections;['history','nextOrderNo','rep','email','cc','lastOrderDate','locName','locAddr','acct'].forEach(function(k){delete ST[k]});
+  if(!ST.curLoc||!findLoc(ST.curLoc))ST.curLoc=ST.locations[0].id;
+}
 function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){el.style.display='none'},2200)}
 function fmtDate(d){if(!d)return'';var x=new Date(/^\d{4}-\d{2}-\d{2}$/.test(d)?d+'T12:00':d);return isNaN(x)?d:x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
 function desc(it){return [it.size,it.pack&&it.pack!=='1'?it.pack:'',it.type].filter(Boolean).join(' · ')}
 
-function chips(){var nOrd=Object.keys(draft).length;var defs=[['active',nOrd?'🛒 Current Order':'＋ New Order'],['ordered','Selected Items'+(nOrd?' ('+nOrd+')':'')],['completed','Completed Orders'+(ST.history.length?' ('+ST.history.length+')':'')],['inactive','Not Carried'],['all','All Items']];
-  $('chips').innerHTML=defs.map(function(d){return '<button class="chip'+(filter===d[0]?' on':'')+'" data-f="'+d[0]+'">'+d[1]+'</button>'}).join('');}
+function chips(){
+  if(view!=='items'){$('chips').innerHTML='';return;}
+  var nn=L().items.filter(function(it){return !it.active}).length;
+  var defs=[['carried','We Carry'],['notcarried','We Do Not Carry ('+nn+')'],['all','All Items']];
+  $('chips').innerHTML=defs.map(function(d){return '<button class="chip'+(itemsTab===d[0]?' on':'')+'" data-f="'+d[0]+'">'+d[1]+'</button>'}).join('');}
 function match(it){
-  if(filter==='active'&&!it.active)return false;
-  if(filter==='inactive'&&it.active)return false;
-  if(filter==='ordered'&&!(draft[it.id]>0))return false;
+  if(view==='order'&&!it.active)return false;
+  if(view==='items'){if(itemsTab==='carried'&&!it.active)return false;if(itemsTab==='notcarried'&&it.active)return false;}
   if(query){var h=(it.name+' '+it.size+' '+it.pack+' '+it.type+' '+it.sec).toLowerCase();return query.split(/\s+/).every(function(w){return h.indexOf(w)>=0})}
   return true;}
+function nOrd(){var n=0,u=0;L().items.forEach(function(it){var q=draft[it.id]||0;if(q>0&&it.active){n++;u+=q}});return {n:n,u:u}}
+function nav(v){if(view==='order')orderY=window.scrollY;view=v;if(v!=='order'&&v!=='items'){query='';$('q').value='';}close();render();
+  window.scrollTo(0,v==='order'?orderY:0);}
 function render(){
+  var titles={home:'Gulf Distributing Order',order:'New Order',completed:'Completed Orders',items:'Manage Items'};
+  $('ttl').textContent=titles[view];
+  $('back').style.display=view==='home'?'none':'';
+  $('gear').style.display=view==='home'?'':'none';
+  $('sub').textContent=view==='home'?'Beer & Red Bull ordering':view==='order'?'Tap + next to each item you need':view==='items'?'📍 '+L().name+' – tap an item to edit, + to add':'All submitted orders';
+  document.querySelector('.tools').classList.toggle('hide',!(view==='order'||view==='items'));
+  $('q').placeholder=view==='order'?'Search items to order…':'Search items…';
   chips();
-  $('q').style.display=filter==='completed'?'none':'';
-  $('fab').style.display=filter==='completed'?'none':'';
-  if(filter==='completed'){renderCompleted();summary();return;}
-  $('sub').textContent='KRRS-NA Bridgeport · BP Food Mart'+(ST.lastOrderDate?' · Last order '+fmtDate(ST.lastOrderDate):'');
-  var html='',any=false;
-  ST.sections.forEach(function(sec){
-    var its=ST.items.filter(function(it){return it.sec===sec&&match(it)});
+  $('fab').style.display=view==='items'?'':'none';
+  if(view==='home')renderHome();
+  else if(view==='completed')renderCompleted();
+  else renderItems();
+  renderBar();
+}
+function renderItems(){
+  var html='',any=false,ordering=view==='order';
+  L().sections.forEach(function(sec){
+    var its=L().items.filter(function(it){return it.sec===sec&&match(it)});
     if(!its.length)return;any=true;
     var open=query||!collapsed[sec];
-    var oc=its.filter(function(it){return draft[it.id]>0}).length;
+    var oc=ordering?its.filter(function(it){return draft[it.id]>0}).length:0;
     html+='<div class="sec"><div class="sech'+(/^RED BULL/.test(sec)?' rb':'')+'" data-sec="'+esc(sec)+'"><span>'+(open?'▾ ':'▸ ')+esc(sec)+'</span><span class="cnt">'+its.length+' items'+(oc?' · '+oc+' ordered':'')+'</span></div>';
     if(open)its.forEach(function(it){
       var q=draft[it.id]||0;
-      html+='<div class="item'+(it.active?'':' inactive')+(q>0?' ordered':'')+'" data-id="'+it.id+'"><div class="info" data-edit="'+it.id+'"><div class="nm">'+esc(it.name)+'</div><div class="meta"><span>'+esc(desc(it))+'</span>'+
-        (it.last!=null&&it.last!==''?'<span class="last">Last: '+esc(it.last)+'</span>':'<span class="last none">Last: –</span>')+
-        (it.active?'':'<span class="tag in">NOT CARRIED</span>')+'</div></div>'+
-        (it.active?'<div class="step"><button data-m="'+it.id+'" aria-label="minus">−</button><input inputmode="numeric" pattern="[0-9]*" data-q="'+it.id+'" value="'+(q||'')+'" placeholder="0"><button class="plus" data-p="'+it.id+'" aria-label="plus">+</button></div>':'')+'</div>';
+      html+='<div class="item'+(it.active?'':' inactive')+(ordering&&q>0?' ordered':'')+'" data-id="'+it.id+'"><div class="info" data-edit="'+it.id+'"><div class="nm">'+esc(it.name)+'</div><div class="meta"><span>'+esc(desc(it))+'</span>'+
+        (lastOf(it)!==''?'<span class="last">Last: '+esc(lastOf(it))+'</span>':'<span class="last none">Last: –</span>')+
+        (it.active?'':'<span class="tag in">WE DO NOT CARRY</span>')+'</div></div>'+
+        (ordering?'<div class="step"><button data-m="'+it.id+'" aria-label="minus">−</button><input inputmode="numeric" pattern="[0-9]*" data-q="'+it.id+'" value="'+(q||'')+'" placeholder="0"><button class="plus" data-p="'+it.id+'" aria-label="plus">+</button></div>':'<span style="color:#9ca3af;font-size:20px">›</span>')+'</div>';
     });
     html+='</div>';
   });
-  $('list').innerHTML=any?html:'<div class="empty">No items match.</div>';
-  summary();
+  $('list').innerHTML=any?html:'<div class="empty">'+(L().items.length?'No items match.':(view==='items'?'No items yet for this location.<br>Tap the red <b>+</b> to add items.':'No items yet for this location.<br>Go to Home › Manage items to add them.'))+'</div>';
 }
-function summary(){var lines=0,units=0;ST.items.forEach(function(it){var q=draft[it.id]||0;if(q>0&&it.active){lines++;units+=q}});
-  var rb=$('revBtn');
-  if(lines){$('sum').innerHTML='<b>'+units+'</b> units · '+lines+' items';rb.innerHTML='Review &amp; Submit ➜';rb.dataset.mode='rev';rb.style.flex='';}
-  else{$('sum').innerHTML='';rb.innerHTML='＋ Create New Order';rb.dataset.mode='new';rb.style.flex='1';}}
+function renderHome(){
+  var p=nOrd(),h='';
+  h+='<div class="link" data-loc="1" style="margin-top:10px"><span>📍 '+esc(L().name)+'<br><span style="font-weight:500;font-size:13px;color:#6b7280">'+(L().acct?'Gulf Acct # '+esc(L().acct):'Add account # in Settings')+'</span></span><span style="font-size:13px;color:#6b7280;white-space:nowrap">'+(ST.locations.length>1?'Change ›':'Edit ›')+'</span></div>';
+  h+='<div class="home-h">Last 5 orders</div>';
+  if(!L().history.length)h+='<div class="empty" style="padding:24px 10px">No orders yet.<br>Tap the green button below to create your first order.</div>';
+  else h+=L().history.slice(0,5).map(function(o,i){return orderCard(o,i,false)}).join('');
+  h+='<div class="home-h">More</div>';
+  h+='<div class="link" data-nav="completed"><span>📋 All completed orders ('+L().history.length+')</span><span>›</span></div>';
+  h+='<div class="link" data-nav="items"><span>📦 Manage items (Add and Edit items)</span><span>›</span></div>';
+  $('list').innerHTML=h;
+}
+function renderBar(){
+  var p=nOrd(),b=$('bar'),h='';
+  if(view==='home'){
+    h=p.n?'<div class="prog" style="margin:0;flex:1"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><div style="font-weight:700;color:#7a5b00">🛒 Order in progress</div><div class="note" style="margin-top:2px">'+p.n+' items · '+p.u+' units – not submitted yet</div></div></div><div class="acts" style="margin-top:10px"><button class="btn o" data-act="startover" style="flex:0 0 38%">Start over</button><button class="btn g" data-act="continue">Continue this order ➜</button></div></div>'
+         :'<button class="btn g" data-act="new" style="flex:1;padding:15px;font-size:16px">Want to create a new order? Click here ➜</button>';
+  }else if(view==='order'){
+    h='<div class="sum">'+(p.n?'<b>'+p.u+'</b> units · '+p.n+' items':'Nothing added yet')+'</div><button class="btn g" data-act="review"'+(p.n?'':' disabled style="opacity:.45"')+'>Review ➜</button>';
+  }
+  b.innerHTML=h;b.style.display=h?'':'none';
+  document.querySelector('main').style.paddingBottom=h?'':'30px';
+}
+function summary(){if(view==='order')renderBar();}
 function setQty(id,q){q=Math.max(0,Math.min(999,parseInt(q,10)||0));if(q)draft[id]=q;else delete draft[id];saveDraft();
   var row=document.querySelector('.item[data-id="'+id+'"]');if(row){row.classList.toggle('ordered',q>0);var inp=row.querySelector('input');if(inp&&document.activeElement!==inp)inp.value=q||'';}
-  summary();chips();}
-function find(id){for(var i=0;i<ST.items.length;i++)if(ST.items[i].id===id)return ST.items[i];}
+  summary();}
+function find(id){for(var i=0;i<L().items.length;i++)if(L().items[i].id===id)return L().items[i];}
 
 // ---------- save on this device ----------
 var SKEY='gulfOrderState_v1';
@@ -154,55 +205,56 @@ function open(html){$('sheet').innerHTML=html;$('ov').classList.add('show');}
 function close(){$('ov').classList.remove('show');}
 $('ov').addEventListener('click',function(e){if(e.target===$('ov'))close()});
 
-function secOptions(sel){return ST.sections.map(function(s){return '<option'+(s===sel?' selected':'')+'>'+esc(s)+'</option>'}).join('')+'<option value="__new">+ New section…</option>'}
+function secOptions(sel){return L().sections.map(function(s){return '<option'+(s===sel?' selected':'')+'>'+esc(s)+'</option>'}).join('')+'<option value="__new">+ New section…</option>'}
 function editItem(id){
-  var it=id?find(id):{id:null,sec:ST.sections[0],size:'12 oz',pack:'6 pk',name:'',type:'Can',last:null,active:true};
+  var it=id?find(id):{id:null,sec:L().sections[0],size:'12 oz',pack:'6 pk',name:'',type:'Can',last:null,active:true};
   open('<h2>'+(id?'Edit item':'Add new item')+'</h2>'+
   '<label>Product name</label><input class="f" id="e_name" value="'+esc(it.name)+'" placeholder="e.g. Michelob Ultra">'+
   '<label>Section</label><select class="f" id="e_sec">'+secOptions(it.sec)+'</select><input class="f" id="e_newsec" placeholder="New section name" style="display:none;margin-top:6px">'+
   '<div class="row"><div><label>Size</label><input class="f" id="e_size" value="'+esc(it.size)+'"></div><div><label>Pack</label><input class="f" id="e_pack" value="'+esc(it.pack)+'"></div></div>'+
   '<div class="row"><div><label>Type</label><select class="f" id="e_type">'+['Can','Btl',''].map(function(t){return '<option value="'+t+'"'+(t===it.type?' selected':'')+'>'+(t||'—')+'</option>'}).join('')+'</select></div>'+
-  '<div><label>Last order qty</label><input class="f" id="e_last" inputmode="numeric" value="'+(it.last==null?'':esc(it.last))+'"></div></div>'+
-  '<label>Do we carry this item?</label><div class="tog" id="e_st"><button data-v="1" class="a'+(it.active?' on':'')+'">Yes – we carry it</button><button data-v="0" class="i'+(it.active?'':' on')+'">No – Not Carried</button></div>'+
+  '<div><label>Last order qty</label><input class="f" id="e_last" inputmode="numeric" value="'+(id?esc(lastOf(it)):'')+'"></div></div>'+
+  '<label>Do we carry this item?</label><div class="tog" id="e_st"><button data-v="1" class="a'+(it.active?' on':'')+'">Yes – we carry it</button><button data-v="0" class="i'+(it.active?'':' on')+'">No – we do not carry it</button></div>'+
   '<div class="acts">'+(id?'<button class="btn r" id="e_del">Delete</button>':'')+'<button class="btn o" id="e_cancel">Cancel</button><button class="btn g" id="e_save">Save</button></div>'+
-  '<div class="note">Not Carried items move to the <b>Not Carried</b> tab and can\'t be ordered. Switch back any time.</div>');
+  '<div class="note">Applies to <b>'+esc(L().name)+'</b> only. Items we do not carry move to the <b>We Do Not Carry</b> tab and can\'t be ordered.</div>');
   var active=it.active;
   $('e_sec').onchange=function(){$('e_newsec').style.display=this.value==='__new'?'block':'none'};
   $('e_st').onclick=function(e){var b=e.target.closest('button');if(!b)return;active=b.dataset.v==='1';[].forEach.call(this.children,function(c){c.classList.toggle('on',c===b)})};
   $('e_cancel').onclick=close;
   if(id)$('e_del').onclick=function(){
-    var b=this;if(b.dataset.c){ST.items=ST.items.filter(function(x){return x.id!==id});delete draft[id];saveDraft();close();persist('Item deleted');}
+    var b=this;if(b.dataset.c){L().items=L().items.filter(function(x){return x.id!==id});delete draft[id];saveDraft();close();persist('Item deleted');}
     else{b.dataset.c=1;b.textContent='Tap again to delete';}};
   $('e_save').onclick=function(){
     var name=$('e_name').value.trim();if(!name){$('e_name').focus();return;}
-    var sec=$('e_sec').value;if(sec==='__new'){sec=$('e_newsec').value.trim().toUpperCase();if(!sec){$('e_newsec').focus();return;}if(ST.sections.indexOf(sec)<0)ST.sections.push(sec);}
+    var sec=$('e_sec').value;if(sec==='__new'){sec=$('e_newsec').value.trim().toUpperCase();if(!sec){$('e_newsec').focus();return;}if(L().sections.indexOf(sec)<0)L().sections.push(sec);}
     var lv=$('e_last').value.trim();var last=lv===''?null:(isNaN(+lv)?lv:+lv);
-    var obj={sec:sec,name:name,size:$('e_size').value.trim(),pack:$('e_pack').value.trim(),type:$('e_type').value,last:last,active:active};
-    if(id){var t=find(id);for(var k in obj)t[k]=obj[k];if(!active){delete draft[id];saveDraft();}}
-    else{obj.id='i'+(ST.nextId++);var idx=-1;ST.items.forEach(function(x,i){if(x.sec===sec)idx=i});if(idx<0)ST.items.push(obj);else ST.items.splice(idx+1,0,obj);}
+    var obj={sec:sec,name:name,size:$('e_size').value.trim(),pack:$('e_pack').value.trim(),type:$('e_type').value,active:active};
+    if(id){var t=find(id);for(var k in obj)t[k]=obj[k];if(!active){delete draft[id];saveDraft();}if(last==null)delete L().last[id];else L().last[id]=last;}
+    else{obj.id='i'+(ST.nextId++);if(last!=null)L().last[obj.id]=last;var idx=-1;L().items.forEach(function(x,i){if(x.sec===sec)idx=i});if(idx<0)L().items.push(obj);else L().items.splice(idx+1,0,obj);}
     close();persist(id?'Item updated':'Item added');
   };
 }
-function nextNo(){return 'GO-'+(ST.nextOrderNo||1001)}
+function nextNo(){return 'GO-'+(L().nextOrderNo||1001)}
 function todayStr(){var dd=new Date();return dd.getFullYear()+'-'+('0'+(dd.getMonth()+1)).slice(-2)+'-'+('0'+dd.getDate()).slice(-2)}
-function orderLines(){return ST.items.filter(function(it){return it.active&&draft[it.id]>0})}
+function orderLines(){return L().items.filter(function(it){return it.active&&draft[it.id]>0})}
 function oLines(o){return o.lines.map(function(l){return Array.isArray(l)?{sec:'',name:l[0],size:'',pack:'',type:'',qty:l[1]}:l})}
 function oUnits(o){return oLines(o).reduce(function(a,l){return a+(+l.qty||0)},0)}
 function ldesc(l){return [l.size,l.pack&&l.pack!=='1'?l.pack:'',l.type].filter(Boolean).join(' · ')}
-function orderText(o){var t='Gulf Distributing order – KRRS-NA Bridgeport (BP Food Mart)\nOrder #: '+o.no+'\nDate: '+fmtDate(o.date)+'\n';var cur='';
+function locLines(){return (L().name||'KRRS-NA Bridgeport LLC – BP Food Mart')+(L().addr?'\n'+L().addr:'')+(L().acct?'\nGulf account #: '+L().acct:'')}
+function orderText(o){var t='Gulf Distributing order\n'+locLines()+'\nOrder #: '+o.no+'\nDate: '+fmtDate(o.date)+'\n';var cur='';
   oLines(o).forEach(function(l){if(l.sec&&l.sec!==cur){cur=l.sec;t+='\n'+cur+'\n'}t+='  '+l.qty+' x '+l.name+(ldesc(l)?' ('+ldesc(l)+')':'')+'\n'});
   return t+'\nTotal: '+oUnits(o)+' units, '+o.lines.length+' items';}
 function review(){
   var lines=orderLines();
-  if(!lines.length){open('<h2>Review order</h2><div class="empty">Nothing on this order yet.<br>Go to <b>＋ New Order</b> and tap + next to an item.</div><div class="acts"><button class="btn o" id="r_x">Close</button></div>');$('r_x').onclick=close;return;}
+  if(!lines.length){open('<h2>Review order</h2><div class="empty">Nothing on this order yet.<br>Tap <b>Continue ordering</b> and use + next to the items you need.</div><div class="acts"><button class="btn g" id="r_x">Continue ordering</button></div>');$('r_x').onclick=function(){nav('order')};return;}
   var cur='',h='';lines.forEach(function(it){if(it.sec!==cur){cur=it.sec;h+='<div class="h"><span>'+esc(cur)+'</span><span>Qty</span></div>'}h+='<div><span>'+esc(it.name)+' <span style="color:#6b7280">'+esc(desc(it))+'</span></span><b>'+draft[it.id]+'</b></div>'});
   var u=lines.reduce(function(a,it){return a+draft[it.id]},0);
   open('<h2>Review order <span style="font-size:14px;color:#6b7280">#'+nextNo()+'</span></h2><div class="rv">'+h+'<div class="h"><span>TOTAL ('+lines.length+' items)</span><span>'+u+'</span></div></div>'+
-  '<div class="note">Check the quantities. To change something, tap <b>Keep editing</b>.</div>'+
-  '<div class="acts"><button class="btn o" id="r_x">Keep editing</button><button class="btn r" id="r_clr">Clear order</button></div>'+
+  '<div class="note">Check the quantities. To add or change items, tap <b>Continue ordering</b> – you\'ll go back to where you left off.</div>'+
+  '<div class="acts"><button class="btn o" id="r_x">‹ Continue ordering</button><button class="btn r" id="r_clr">Clear order</button></div>'+
   '<div class="acts"><button class="btn g" id="r_sub" style="font-size:17px;padding:15px">Submit order ➜</button></div>');
-  $('r_x').onclick=close;
-  $('r_clr').onclick=function(){var b=this;if(b.dataset.c){draft={};saveDraft();close();render();toast('Order cleared')}else{b.dataset.c=1;b.textContent='Tap again to clear'}};
+  $('r_x').onclick=function(){nav('order')};
+  $('r_clr').onclick=function(){var b=this;if(b.dataset.c){draft={};saveDraft();orderY=0;nav('home');toast('Order cleared')}else{b.dataset.c=1;b.textContent='Tap again to clear'}};
   $('r_sub').onclick=function(){submitChoice(lines)};
 }
 function submitChoice(lines){
@@ -218,16 +270,16 @@ function submitChoice(lines){
   $('s_b').onclick=function(){finish(lines,'b')};
 }
 function finish(lines,how){
-  if(how!=='p'&&!ST.email){ // ask for email first
+  if(how!=='p'&&!L().email){ // ask for email first
     emailOrder(null,function(){finish(lines,how)});return;}
-  var now=todayStr(),no=nextNo();ST.nextOrderNo=(ST.nextOrderNo||1001)+1;
+  var now=todayStr(),no=nextNo();L().nextOrderNo=(L().nextOrderNo||1001)+1;
   var o={no:no,date:now,sent:how==='p'?'Printed':how==='e'?'Emailed':'Printed & emailed',lines:lines.map(function(it){return {sec:it.sec,name:it.name,size:it.size,pack:it.pack,type:it.type,qty:draft[it.id]}})};
-  ST.history.unshift(o);if(ST.history.length>200)ST.history.length=200;
-  lines.forEach(function(it){it.last=draft[it.id]});
-  ST.lastOrderDate=now;draft={};saveDraft();
+  L().history.unshift(o);if(L().history.length>200)L().history.length=200;
+  lines.forEach(function(it){L().last[it.id]=draft[it.id]});
+  L().lastOrderDate=now;draft={};saveDraft();
   try{localStorage.setItem(SKEY,JSON.stringify(ST))}catch(e){}
   backup('Gulf Order Backup '+no+' '+now+'.json');
-  filter='completed';close();render();window.scrollTo(0,0);
+  orderY=0;view='home';query='';$('q').value='';close();render();window.scrollTo(0,0);
   toast('Order '+no+' completed');
   setTimeout(function(){
     if(how==='p')printOrder(o);
@@ -235,50 +287,82 @@ function finish(lines,how){
     else{printOrder(o,function(){open('<h2>Order #'+no+' printed</h2><div class="note" style="font-size:15px;color:#333">Now send the email.</div><div class="acts"><button class="btn g" id="b_e" style="padding:15px">✉ Open email</button></div><div class="acts"><button class="btn o" id="b_x">Skip</button></div>');$('b_e').onclick=function(){close();sendMail(o)};$('b_x').onclick=close;});}
   },700);
 }
+function orderCard(o,i,openIt){var ls=oLines(o),cur='',rows='';
+  ls.forEach(function(l){if(l.sec&&l.sec!==cur){cur=l.sec;rows+='<div class="h"><span>'+esc(cur)+'</span><span>Qty</span></div>'}rows+='<div><span>'+esc(l.name)+' <span style="color:#6b7280">'+esc(ldesc(l))+'</span></span><b>'+l.qty+'</b></div>'});
+  return '<details class="item" style="display:block;margin-top:8px"'+(openIt?' open':'')+'><summary style="font-weight:700;cursor:pointer;list-style:none"><div style="display:flex;justify-content:space-between;gap:8px"><span style="color:var(--n)">✓ '+esc(o.no||'Order')+'</span><span style="font-weight:500;color:#6b7280">'+fmtDate(o.date)+' ▾</span></div>'+
+    '<div class="meta"><span>'+oUnits(o)+' units · '+ls.length+' items</span>'+(o.sent?'<span class="last" style="background:#e6f4ec;color:#00843D">'+esc(o.sent)+'</span>':'')+'</div></summary>'+
+    '<div class="rv" style="margin-top:8px">'+rows+'</div><div class="acts"><button class="btn o" data-co="p" data-i="'+i+'">🖨 Print again</button><button class="btn o" data-co="e" data-i="'+i+'">✉ Email again</button></div></details>';}
 function renderCompleted(){
-  if(!ST.history.length){$('list').innerHTML='<div class="empty">No completed orders yet.<br>Tap <b>＋ New Order</b>, add items, tap <b>Review &amp; Submit</b>, then <b>Submit order</b>.</div>';return;}
-  $('list').innerHTML=ST.history.map(function(o,i){var ls=oLines(o),cur='',rows='';
-    ls.forEach(function(l){if(l.sec&&l.sec!==cur){cur=l.sec;rows+='<div class="h"><span>'+esc(cur)+'</span><span>Qty</span></div>'}rows+='<div><span>'+esc(l.name)+' <span style="color:#6b7280">'+esc(ldesc(l))+'</span></span><b>'+l.qty+'</b></div>'});
-    return '<details class="item" style="display:block;margin-top:8px"'+(i===0?' open':'')+'><summary style="font-weight:700;cursor:pointer;list-style:none"><div style="display:flex;justify-content:space-between;gap:8px"><span style="color:var(--n)">✓ '+esc(o.no||'Order')+'</span><span style="font-weight:500;color:#6b7280">'+fmtDate(o.date)+'</span></div>'+
-      '<div class="meta"><span>'+oUnits(o)+' units · '+ls.length+' items</span>'+(o.sent?'<span class="last" style="background:#e6f4ec;color:#00843D">'+esc(o.sent)+'</span>':'')+'</div></summary>'+
-      '<div class="rv" style="margin-top:8px">'+rows+'</div><div class="acts"><button class="btn o" data-co="p" data-i="'+i+'">🖨 Print again</button><button class="btn o" data-co="e" data-i="'+i+'">✉ Email again</button></div></details>'}).join('');}
+  if(!L().history.length){$('list').innerHTML='<div class="empty">No completed orders yet.</div>';return;}
+  $('list').innerHTML=L().history.map(function(o,i){return orderCard(o,i,i===0)}).join('');}
 function showText(t){open('<h2>Order text</h2><textarea class="f" style="height:300px" readonly>'+esc(t)+'</textarea><div class="note">Select all and copy.</div><div class="acts"><button class="btn o" id="t_x">Close</button></div>');$('t_x').onclick=close;}
 function printOrder(o,after){
   var cur='',rows='';
   oLines(o).forEach(function(l){if(l.sec&&l.sec!==cur){cur=l.sec;rows+='<tr class="s"><td colspan="5">'+esc(cur)+'</td></tr>'}
     rows+='<tr><td>'+esc(l.name)+'</td><td>'+esc(l.size)+'</td><td>'+esc(l.pack)+'</td><td>'+esc(l.type)+'</td><td class="q">'+l.qty+'</td></tr>'});
-  $('printArea').innerHTML='<h1>Gulf Distributing – Beer &amp; Red Bull Order</h1><div>KRRS-NA Bridgeport LLC · BP Food Mart · Bridgeport, AL</div><div><b>Order #: '+esc(o.no)+'</b> &nbsp;&nbsp; Order date: '+fmtDate(o.date)+' &nbsp;&nbsp; Sales rep: '+esc(ST.rep||'')+'</div>'+
+  $('printArea').innerHTML='<h1>Gulf Distributing – Beer &amp; Red Bull Order</h1><div><b>'+esc(L().name||'KRRS-NA Bridgeport LLC · BP Food Mart')+'</b></div>'+(L().addr?'<div>'+esc(L().addr).replace(/\n/g,'<br>')+'</div>':'')+(L().acct?'<div>Gulf account #: <b>'+esc(L().acct)+'</b></div>':'')+'<div><b>Order #: '+esc(o.no)+'</b> &nbsp;&nbsp; Order date: '+fmtDate(o.date)+' &nbsp;&nbsp; Sales rep: '+esc(L().rep||'')+'</div>'+
     '<table><tr><th>Product</th><th>Size</th><th>Pack</th><th>Type</th><th>Qty</th></tr>'+rows+'<tr class="s"><td colspan="4">TOTAL ('+o.lines.length+' items)</td><td class="q">'+oUnits(o)+'</td></tr></table>'+
     '<p style="margin-top:30px">Received by: ______________________ &nbsp;&nbsp;&nbsp; Date: ____________</p>';
   close();
   if(after){var done=false;var go=function(){if(done)return;done=true;window.removeEventListener('afterprint',go);setTimeout(after,300)};window.addEventListener('afterprint',go);setTimeout(function(){window.print();setTimeout(go,1500)},150);}
   else setTimeout(function(){window.print()},150);}
-function sendMail(o){var em=ST.email||'',cc=ST.cc||'';
-  var url='mailto:'+em+'?'+(cc?'cc='+encodeURIComponent(cc)+'&':'')+'subject='+encodeURIComponent('Order '+o.no+' – BP Food Mart Bridgeport – '+fmtDate(o.date))+'&body='+encodeURIComponent(orderText(o)+'\n\nThank you,\nSatyapal\nBP Food Mart – Bridgeport, AL');
+function sendMail(o){var em=L().email||'',cc=L().cc||'';
+  var url='mailto:'+em+'?'+(cc?'cc='+encodeURIComponent(cc)+'&':'')+'subject='+encodeURIComponent('Order '+o.no+' – '+(L().name||'BP Food Mart Bridgeport')+(L().acct?' (Acct '+L().acct+')':'')+' – '+fmtDate(o.date))+'&body='+encodeURIComponent(orderText(o)+'\n\nThank you,\nSatyapal\n'+(L().name||'BP Food Mart – Bridgeport, AL'));
   window.location.href=url;}
 function emailOrder(o,then){
-  open('<h2>'+(o?'Email order #'+esc(o.no):'Where should orders be emailed?')+'</h2><label>Send to</label><input class="f" id="m_to" type="email" value="'+esc(ST.email||'')+'" placeholder="rep@gulfdistributing.com">'+
-   '<label>CC (optional)</label><input class="f" id="m_cc" type="email" value="'+esc(ST.cc||'')+'">'+
+  open('<h2>'+(o?'Email order #'+esc(o.no):'Where should orders be emailed?')+'</h2><label>Send to</label><input class="f" id="m_to" type="email" value="'+esc(L().email||'')+'" placeholder="rep@gulfdistributing.com">'+
+   '<label>CC (optional)</label><input class="f" id="m_cc" type="email" value="'+esc(L().cc||'')+'">'+
    '<div class="note">Opens your mail app with the order filled in – then tap Send there. This address is remembered.</div>'+
    '<div class="acts"><button class="btn o" id="m_x">Cancel</button><button class="btn g" id="m_send">'+(o?'Open mail app':'Continue')+'</button></div>');
   $('m_x').onclick=close;
   $('m_send').onclick=function(){var em=$('m_to').value.trim(),cc=$('m_cc').value.trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('m_to').focus();toast('Enter a valid email');return;}
-    ST.email=em;ST.cc=cc;try{localStorage.setItem(SKEY,JSON.stringify(ST))}catch(e){}
+    L().email=em;L().cc=cc;try{localStorage.setItem(SKEY,JSON.stringify(ST))}catch(e){}
     close();if(then)then();else if(o)sendMail(o);};}
 function backup(fname){var blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(typeof fname==='string'&&fname)||('Gulf Order Backup '+new Date().toISOString().slice(0,10)+'.json');document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);}
-function restore(file){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d.items||!d.sections)throw 0;ST=d;close();persist('Backup restored')}catch(e){toast('That file is not a Gulf Order backup')}};r.readAsText(file);}
+function restore(file){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d.items||!d.sections)throw 0;ST=d;ensureLoc();loadDraft();close();persist('Backup restored')}catch(e){toast('That file is not a Gulf Order backup')}};r.readAsText(file);}
 function settings(){
-  open('<h2>Settings</h2><label>Sales rep (name · phone)</label><input class="f" id="s_rep" value="'+esc(ST.rep||'')+'">'+
-  '<label>Order email – send to</label><input class="f" id="s_em" type="email" value="'+esc(ST.email||'')+'">'+
-  '<label>CC (optional)</label><input class="f" id="s_cc" type="email" value="'+esc(ST.cc||'')+'">'+
-  '<div class="acts"><button class="btn o" id="s_x">Cancel</button><button class="btn g" id="s_ok">Save</button></div>'+
-  '<label style="margin-top:20px">Move your list to another phone/tablet</label><div class="acts" style="margin-top:4px"><button class="btn o" id="s_bk">Save backup file</button><label class="btn o" style="text-align:center;margin:0;color:var(--n)">Restore backup<input type="file" accept=".json,application/json" id="s_rs" style="display:none"></label></div>'+
-  '<div class="note">Your items, Last qty and history are saved on this device only.</div>');
+  var rows=ST.locations.map(function(l){var cur=l.id===ST.curLoc;
+    return '<div class="item" style="margin-top:6px'+(cur?';border-color:var(--g);background:var(--g2)':'')+'"><div class="info" data-le="'+l.id+'"><div class="nm">'+(cur?'✓ ':'')+esc(l.name||'(no name)')+'</div><div class="meta"><span>'+(l.acct?'Acct # '+esc(l.acct):'No account # yet')+'</span><span>'+l.history.length+' orders</span></div></div><span style="color:#9ca3af;font-size:20px">›</span></div>'}).join('');
+  open('<h2>Settings</h2><label style="margin-top:0">Locations <span style="font-weight:400">(tap one to edit it)</span></label>'+rows+
+  '<div class="acts"><button class="btn o" id="s_add">＋ Add location</button>'+(ST.locations.length>1?'<button class="btn" id="s_sw">Switch location</button>':'')+'</div>'+
+  '<label style="margin-top:20px">Backup / move to another phone or tablet</label><div class="acts" style="margin-top:4px"><button class="btn o" id="s_bk">Save backup file</button><label class="btn o" style="text-align:center;margin:0;color:var(--n)">Restore backup<input type="file" accept=".json,application/json" id="s_rs" style="display:none"></label></div>'+
+  '<div class="note">Everything is saved on this device only. Each location keeps its own item list, orders, order numbers and Last quantities. A new location starts with a copy of the current location\'s items.</div>'+
+  '<div class="acts"><button class="btn o" id="s_x">Close</button></div>');
+  [].forEach.call(document.querySelectorAll('[data-le]'),function(el){el.onclick=function(){editLoc(el.dataset.le)}});
+  $('s_add').onclick=function(){editLoc(null)};
+  if($('s_sw'))$('s_sw').onclick=pickLoc;
   $('s_bk').onclick=function(){backup()};$('s_rs').onchange=function(){if(this.files[0])restore(this.files[0])};
-  $('s_x').onclick=close;$('s_ok').onclick=function(){ST.rep=$('s_rep').value.trim();ST.email=$('s_em').value.trim();ST.cc=$('s_cc').value.trim();close();persist('Settings saved')};}
+  $('s_x').onclick=close;}
+function editLoc(id){
+  var l=id?findLoc(id):{name:'',addr:'',acct:'',rep:'',email:'',cc:''};
+  open('<h2>'+(id?'Edit location':'Add location')+'</h2><label>Location name</label><input class="f" id="l_name" value="'+esc(l.name)+'" placeholder="e.g. BP Food Mart – Bridgeport">'+
+  '<label>Address</label><textarea class="f" id="l_addr" rows="2" placeholder="Street, City, State ZIP">'+esc(l.addr)+'</textarea>'+
+  '<label>Gulf Distributing account number</label><input class="f" id="l_acct" value="'+esc(l.acct)+'">'+
+  '<label>Sales rep (name · phone)</label><input class="f" id="l_rep" value="'+esc(l.rep)+'">'+
+  '<label>Order email – send to</label><input class="f" id="l_em" type="email" value="'+esc(l.email)+'">'+
+  '<label>CC (optional)</label><input class="f" id="l_cc" type="email" value="'+esc(l.cc)+'">'+(id?'':'<label>Copy item list from</label><select class="f" id="l_copy">'+ST.locations.map(function(x){return '<option value="'+x.id+'"'+(x.id===ST.curLoc?' selected':'')+'>'+esc(x.name)+' ('+x.items.filter(function(i){return i.active}).length+' items we carry)</option>'}).join('')+'<option value="">Start with an empty list</option></select><div class="note">The new location gets its own copy. Changes later apply to that location only.</div>')+
+  '<div class="acts">'+(id&&ST.locations.length>1?'<button class="btn r" id="l_del">Delete</button>':'')+'<button class="btn o" id="l_x">Cancel</button><button class="btn g" id="l_ok">Save</button></div>');
+  $('l_x').onclick=settings;
+  if($('l_del'))$('l_del').onclick=function(){var b=this;if(b.dataset.c){ST.locations=ST.locations.filter(function(x){return x.id!==id});try{localStorage.removeItem('gulfOrderDraft_'+id)}catch(e){}ensureLoc();loadDraft();close();persist('Location deleted');}else{b.dataset.c=1;b.textContent='Tap again – deletes its '+l.history.length+' orders';}};
+  $('l_ok').onclick=function(){var nm=$('l_name').value.trim();if(!nm){$('l_name').focus();return;}
+    var v={name:nm,addr:$('l_addr').value.trim(),acct:$('l_acct').value.trim(),rep:$('l_rep').value.trim(),email:$('l_em').value.trim(),cc:$('l_cc').value.trim()};
+    if(id){for(var k in v)l[k]=v[k];close();persist('Location saved');}
+    else{v.id='L'+(ST.nextLocId=(ST.nextLocId||2)+0);ST.nextLocId++;v.history=[];v.last={};v.nextOrderNo=1001;v.lastOrderDate='';var cs=$('l_copy').value,src=cs?findLoc(cs):null;v.items=src?JSON.parse(JSON.stringify(src.items)):[];v.sections=src?src.sections.slice():[];ST.locations.push(v);ST.curLoc=v.id;loadDraft();close();persist('Location added – now using '+nm);}};}
+function pickLoc(){
+  open('<h2>Choose location</h2>'+ST.locations.map(function(l){var cur=l.id===ST.curLoc;return '<div class="link" data-pk="'+l.id+'" style="'+(cur?'border-color:var(--g);background:var(--g2)':'')+'"><span>'+(cur?'✓ ':'')+esc(l.name)+(l.acct?' <span style="font-weight:500;color:#6b7280">· Acct # '+esc(l.acct)+'</span>':'')+'</span><span>›</span></div>'}).join('')+
+   '<div class="acts"><button class="btn o" id="p_x">Cancel</button></div>');
+  [].forEach.call(document.querySelectorAll('[data-pk]'),function(el){el.onclick=function(){ST.curLoc=el.dataset.pk;loadDraft();view='home';close();persist('Now using '+L().name);window.scrollTo(0,0);}});
+  $('p_x').onclick=close;}
 // ---------- events ----------
-$('chips').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;filter=b.dataset.f;render();window.scrollTo(0,0)};
+$('chips').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;itemsTab=b.dataset.f;render();window.scrollTo(0,0)};
+$('back').onclick=function(){nav('home')};
+$('list').addEventListener('click',function(e){var n=e.target.closest('[data-nav]');if(n)nav(n.dataset.nav);if(e.target.closest('[data-loc]')){if(ST.locations.length>1)pickLoc();else editLoc(ST.curLoc);}});
+$('bar').addEventListener('click',function(e){var b=e.target.closest('[data-act]');if(!b||b.disabled)return;var a=b.dataset.act;
+  if(a==='new'||a==='continue'){if(a==='new')orderY=0;nav('order');if(a==='new')toast('Tap + next to the items you need');}
+  else if(a==='review')review();
+  else if(a==='startover'){var p=nOrd();open('<h2>Start over?</h2><div class="note" style="font-size:15px;color:#333">This clears the order in progress ('+p.n+' items). It has not been submitted.</div><div class="acts"><button class="btn o" id="n_x">Cancel</button><button class="btn r" id="n_go">Clear &amp; start new</button></div>');$('n_x').onclick=close;$('n_go').onclick=function(){draft={};saveDraft();orderY=0;nav('order');toast('New order started');};}
+});
 $('q').oninput=function(){query=this.value.trim().toLowerCase();render()};
 $('list').addEventListener('click',function(e){
   var t=e.target,s;
@@ -290,16 +374,9 @@ $('list').addEventListener('click',function(e){
 $('list').addEventListener('input',function(e){if(e.target.dataset.q)setQty(e.target.dataset.q,e.target.value)});
 $('list').addEventListener('focusin',function(e){if(e.target.dataset.q)e.target.select()});
 $('fab').onclick=function(){editItem(null)};
-$('revBtn').onclick=function(){if(this.dataset.mode==='new'){filter='active';query='';$('q').value='';close();render();window.scrollTo(0,0);toast('Tap + next to the items you need');}else review();};$('gear').onclick=settings;
-$('list').addEventListener('click',function(e){var b=e.target.closest('[data-co]');if(!b)return;var o=ST.history[+b.dataset.i];if(!o)return;if(b.dataset.co==='p')printOrder(o);else emailOrder(o,null);});
-$('newOrd').onclick=function(){
-  var n=Object.keys(draft).length;
-  function start(){draft={};saveDraft();filter='active';query='';$('q').value='';close();render();window.scrollTo(0,0);toast('New order started – tap + to add items');}
-  if(!n){start();return;}
-  open('<h2>Start a new order?</h2><div class="note" style="font-size:15px;color:#333">The current order has '+n+' item(s) that were not submitted. Starting a new order will clear them.</div>'+
-   '<div class="acts"><button class="btn o" id="n_x">Cancel</button><button class="btn g" id="n_rev">Review current</button></div><div class="acts"><button class="btn r" id="n_go">Clear &amp; start new</button></div>');
-  $('n_x').onclick=close;$('n_rev').onclick=function(){close();review()};$('n_go').onclick=start;};
-render();
+$('gear').onclick=settings;
+$('list').addEventListener('click',function(e){var b=e.target.closest('[data-co]');if(!b)return;var o=L().history[+b.dataset.i];if(!o)return;if(b.dataset.co==='p')printOrder(o);else emailOrder(o,null);});
+ensureLoc();loadDraft();render();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
 })();
 </script>
